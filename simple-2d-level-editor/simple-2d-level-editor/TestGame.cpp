@@ -34,16 +34,18 @@ public:
 			}
 		}
 		testWindow->clear();
-
-		int rows = MAP_SIZE_HEIGHT / TILE_SIZE + 1;
-		int columns = MAP_SIZE_WIDTH / TILE_SIZE;
-		for(int i = 0; i < rows; ++i){
-			for(int j = 0; j < columns; ++j){
-				if(tiles[i][j] != NULL){
-					testWindow->draw(tiles[i][j]->shape);
+		if(!error){
+			int rows = cameraPos.y / TILE_SIZE + 1;
+			int columns = cameraPos.x / TILE_SIZE + 3;
+			for(int i = 0; i <= rows; ++i){
+				for(int j = cameraPos.x / TILE_SIZE - 3; j < columns; ++j){
+					if(tiles[i][j] != NULL){
+						testWindow->draw(tiles[i][j]->shape);
+					}
 				}
 			}
 		}
+
 		testWindow->display();
 		return RUNNING;
 	};
@@ -54,6 +56,9 @@ private:
 	int MAP_SIZE_WIDTH;
 	int MAP_SIZE_HEIGHT;
 	sf::RenderWindow* testWindow = NULL;
+
+	sf::Vector2f cameraPos = sf::Vector2f(80, 80);
+	bool error = true;//remove this 
 	
 	typedef std::vector< std::vector<Tile*> > Tiles;
 	Tiles tiles;
@@ -75,6 +80,7 @@ private:
 			}
 			tiles.push_back(row);
 		}
+		error = false;
 	};
 
 	int getNumber(char* buffer, int& index){
@@ -95,54 +101,48 @@ private:
 		file.open(fullname);
 
 		if(file){
-			int length = 50;
-			char * buffer = new char[length]{'/'};//magic value
+			int length = 50;//magic value
+			char * buffer = new char[length]{};
 			while(!file.eof()){
 				file.getline(buffer, length);
-				int index = 0;
-				bool error = false;
 				Tile* tile;
+				int configID;
+				int index = 0;
 
 				TileConfigID id;
-				int posX, posY; //stupidstupidstupid
-				int num;//remoe this
-				posX = posY = 0;
+				int posX, posY;
 
-				while(buffer[index] != '/' && !error){
+				while(buffer[index] != 0){
 
-					switch(buffer[index]){// should use the enum instead....
+					switch(buffer[index]){
 						case ';':
 							++index;
 							break;
 						case ':':
 							++index;
 							break;
-						case '0':
+						case MAP_SIZE:
 							MAP_SIZE_WIDTH = getNumber(buffer, ++index);
 							MAP_SIZE_HEIGHT = getNumber(buffer, ++index);
 							initEmptyMap();
 							break;
-						case '1':
-							num = getNumber(buffer, ++index);
-							id = num == 0 ? GREEN : RED; //change this
+						case ID:
+							configID = getNumber(buffer, ++index);
 							break;
-						case '2':
+						case POSITION:
 							posX = getNumber(buffer, ++index);
 							posY = getNumber(buffer, ++index);
 							tile = tiles[posY / TILE_SIZE][posX / TILE_SIZE];
-							tile->shape.setPosition(sf::Vector2f(posX, posY));
 							
-							if(id == GREEN){
-								tile->shape.setFillColor(sf::Color::Green);
-							}
-							else if(id == RED){
-								tile->shape.setFillColor(sf::Color::Red);
-							}
+							tile->applyTileConfig(TileConfigsCollectionGlobal[configID], MODE_GAME);
+							tile->shape.setPosition(posX, GAME_RES_HEIGHT - tile->height);
 
 							break;
 						default :
 							printf("ERROR unrecognized symbol %c in line %s", buffer[index], buffer);
-							error = true;
+							file.close();
+							delete[] buffer;					
+							return 0;
 							break;
 					}
 				}
