@@ -1,5 +1,6 @@
 #pragma once
 #include "Common.h"
+#include "Character.h"
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
@@ -7,12 +8,17 @@
 
 class LevelEditor{
 public:
-	LevelEditor(){
-		window = new sf::RenderWindow(sf::VideoMode(MAP_SIZE_WIDTH, MAP_SIZE_HEIGHT), "FOCKEN OP EDITOR M8");
+	LevelEditor(){};
+	LevelEditor(sf::RenderWindow* newWindow){
+		window = newWindow;
 		initMap();
-	};
+	}
 	~LevelEditor(){
 		delete window;
+	};
+
+	sf::RenderWindow* getWindow(){
+		return window;
 	};
 	
 	inline bool outOfWindowBounds(int x, int y){
@@ -23,11 +29,9 @@ public:
 		sf::Event event;
 		if(window->pollEvent(event)){
 			if(event.type == sf::Event::Closed){
-				window->close();
 				return EXITING;
 			}
 			if(sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)){
-				window->close();
 				return EXITING;
 			}
 
@@ -56,7 +60,6 @@ public:
 
 		}
 
-		window->clear();
 		int rows = MAP_SIZE_HEIGHT / TILE_SIZE + 1;
 		int columns = MAP_SIZE_WIDTH / TILE_SIZE;
 		for(int i = 0; i < rows; ++i){
@@ -66,7 +69,6 @@ public:
 				}
 			}
 		}
-		window->display();
 		
 		return RUNNING;
 	};
@@ -76,9 +78,6 @@ private:
 
 	typedef std::vector< std::vector<Tile*> > Tiles;
 	Tiles tiles;
-
-	const unsigned int MAP_SIZE_WIDTH = 800;
-	const unsigned int MAP_SIZE_HEIGHT = 600;
 
 	void initMap(){
 		int rows = MAP_SIZE_HEIGHT / TILE_SIZE + 1;

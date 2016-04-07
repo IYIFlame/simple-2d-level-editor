@@ -1,17 +1,24 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include <map>
+#include <vector>
 
 //for update functions
 enum Status{
 	NOT_RUNNING,
 	RUNNING,
+	SUSPENDED,
 	EXITING,
 };
 
-// for exporting the map(find a way to use for import)
-enum MapEntryTypeID{
-	MAP_SIZE,
+enum RunningMode{
+	MODE_LEVEL_EDITOR,
+	MODE_GAME,
+};
+
+// for exporting the map
+enum MapEntryTypeID:unsigned char{
+	MAP_SIZE = '0',
 	ID,
 	POSITION,
 };
@@ -20,41 +27,61 @@ enum MapEntryTypeID{
 enum TileConfigID{
 	GREEN,
 	RED,
+	CHARACTER,
 };
 
+//we moved this here for creating the window it should be renamed, the actual map sizes will vary per map...
+const unsigned int MAP_SIZE_WIDTH = 1024;
+const unsigned int MAP_SIZE_HEIGHT = 768;
+const int GAME_RES_WIDTH = 1024;//??
+const int GAME_RES_HEIGHT = 768;
 const unsigned int TILE_SIZE = 16;
 
-struct TileConfig{
+static struct TileConfig{
 public:
+	TileConfigID id;
 	sf::Color colour;
-	sf::Vector2f size;
+	sf::Vector2f levelEditorSize;
+	sf::Vector2f inGameSize;
+
+	TileConfig(TileConfigID newID, sf::Color newColour, sf::Vector2f newlevelEditorSize, sf::Vector2f newInGameSize){
+		id = newID; colour = newColour; levelEditorSize = newlevelEditorSize; inGameSize = newInGameSize;
+	};
 };
 
-struct TileConfig_Green :public TileConfig{
-public:
-	TileConfigID id = GREEN;
-	sf::Color colour = sf::Color::Green;
-	sf::Vector2f size = sf::Vector2f(TILE_SIZE, TILE_SIZE);
+static struct TileConfigsCollection{
+	TileConfig green = TileConfig(GREEN, sf::Color::Color(0,255,0,255), sf::Vector2f(TILE_SIZE, TILE_SIZE), sf::Vector2f(TILE_SIZE, TILE_SIZE));
+	TileConfig red = TileConfig(RED, sf::Color::Color(255, 0, 0, 255), sf::Vector2f(TILE_SIZE, TILE_SIZE), sf::Vector2f(TILE_SIZE, TILE_SIZE * 3));
+	TileConfig character = TileConfig(CHARACTER, sf::Color::Color(0,0,255,255), sf::Vector2f(TILE_SIZE, TILE_SIZE), sf::Vector2f(TILE_SIZE, TILE_SIZE));
+	
+	//remember to add all of the above in here
+	const std::vector<TileConfig> configs = {green, red, character};
+	TileConfig operator[](int id){
+		return configs[id];
+	};
 };
 
-struct TileConfig_Red :public TileConfig{
-public:
-	TileConfigID id = RED;
-	sf::Color colour = sf::Color::Red;
-	sf::Vector2f size = sf::Vector2f(TILE_SIZE, TILE_SIZE*3);
-};
+static TileConfigsCollection TileConfigsCollectionGlobal;
 
-
-//std::map<TileConfigID, TileConfig> enumToTileConfigMapping;
-//enumToTileConfigMapping.insert(std::pair<TileConfigID, TileConfig>(GREEN, TileConfig_Green()));
-
+//consider saving the config we are currently using and store information such as the id only there
 class Tile{
 public:
 	TileConfigID id;
 	sf::RectangleShape shape;
+	int height;
 
 	Tile::Tile(){};
+	Tile::Tile(TileConfig config, RunningMode mode = MODE_LEVEL_EDITOR){ applyTileConfig(config, mode); };
 	Tile::Tile(sf::Vector2f position){ shape = sf::RectangleShape(position); };
-	void applyTileConfig(TileConfig_Green config){ id = config.id;  shape.setFillColor(config.colour); shape.setSize(config.size); };
-	void applyTileConfig(TileConfig_Red config){ id = config.id; shape.setFillColor(config.colour); shape.setSize(config.size); };
+	void applyTileConfig(TileConfig config, RunningMode mode){ 
+		id = config.id;  shape.setFillColor(config.colour); 
+		if(mode == MODE_LEVEL_EDITOR){
+			height = config.levelEditorSize.y;
+			shape.setSize(config.levelEditorSize); 
+		}
+		else if(mode == MODE_GAME){
+			height = config.inGameSize.y;
+			shape.setSize(config.inGameSize);
+		}
+	};
 };

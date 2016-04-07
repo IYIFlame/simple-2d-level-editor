@@ -8,23 +8,25 @@
 
 class TestGame{
 public:
-	TestGame(){
+	TestGame(){};
+	TestGame(sf::RenderWindow* newWindow){
 		printf("creating window\n");
-		testWindow = new sf::RenderWindow(sf::VideoMode(GAME_RES_WIDTH, GAME_RES_HEIGHT), "FOCKEN OP GAEM M8");
+		testWindow = newWindow;
 	};
 	~TestGame(){
 		delete testWindow;
+	};
+	sf::RenderWindow* getWindow(){
+		return testWindow;
 	};
 
 	Status update(float dt){
 		sf::Event event;
 		if(testWindow->pollEvent(event)){ 
 			if(event.type == sf::Event::Closed){
-				testWindow->close();
 				return EXITING;
 			}
 			if(sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)){
-				testWindow->close();
 				return EXITING;
 			}
 
@@ -33,35 +35,32 @@ public:
 				importMap(fileName);
 			}
 		}
-		testWindow->clear();
+
 		if(!error){
-			int rows = cameraPos.y / TILE_SIZE + 1;
-			int columns = cameraPos.x / TILE_SIZE + 3;
-			for(int i = 0; i <= rows; ++i){
-				for(int j = cameraPos.x / TILE_SIZE - 3; j < columns; ++j){
+			int rows = GAME_RES_HEIGHT / TILE_SIZE + 1;
+			int columns = GAME_RES_WIDTH / TILE_SIZE;
+			for(int i = 0; i < rows; ++i){
+				for(int j = 0; j < columns; ++j){
 					if(tiles[i][j] != NULL){
 						testWindow->draw(tiles[i][j]->shape);
 					}
 				}
 			}
 		}
+		
 
-		testWindow->display();
 		return RUNNING;
 	};
 
 private:
-	const int GAME_RES_WIDTH = 800;//??
-	const int GAME_RES_HEIGHT = 600;
 	int MAP_SIZE_WIDTH;
 	int MAP_SIZE_HEIGHT;
 	sf::RenderWindow* testWindow = NULL;
-
-	sf::Vector2f cameraPos = sf::Vector2f(80, 80);
-	bool error = true;//remove this 
 	
 	typedef std::vector< std::vector<Tile*> > Tiles;
 	Tiles tiles;
+
+	bool error = true;// remove this
 
 	void initEmptyMap(){
 		int rows = MAP_SIZE_HEIGHT / TILE_SIZE + 1;
