@@ -5,22 +5,37 @@ class Character{
 public:
 	// the camera should be initialized here possible and it should be based on the position
 	Character();
+	Character(float, float, RunningMode);
 	~Character();
 
+	void move(sf::Vector2f);
 	void setPosition(sf::Vector2f newPosition){ position = newPosition; };
-	void setPosition(float x, float y){ position.x = x; position.y = y; };
+	void setPosition(float, float);
+	void setStartPosition(float, float);
+	void resetPosition(){ position = startPosition; };
 	void applyTileConfig(TileConfig config, RunningMode mode);
-	sf::View getCamera(){ return *camera; };
-	Status modeLevelEditorUpdate(sf::RenderWindow*);
-	Status modeGameUpdate(sf::RenderWindow*);
+	void applyRunningModeSettings(RunningMode);
+	void setCurrentWindow(sf::RenderWindow* newWindow){ currWindow = newWindow; };
+	void setCurrentViewport(CurrentViewport);
+	sf::View* getCamera(){ return camera; };
+	CurrentViewport getCurrentViewport(){ return currentViewport; };
+	sf::Vector2f getPosition(){
+		return position;
+	}
+	Status modeLevelEditorUpdate();
+	Status modeGameUpdate();
+
+	TileConfigID id;
+	sf::CircleShape shape = sf::CircleShape(TILE_SIZE);
+	sf::Vector2f startPosition;
 
 private:
-	TileConfigID id;
-	sf::View* camera;
-	sf::Vector2f cameraSize = sf::Vector2f(128, 80);
-	sf::Vector2f position;
-	sf::CircleShape shape = sf::CircleShape(TILE_SIZE);
 	sf::RenderWindow* currWindow = NULL;
+	//TestGame* game;
+	sf::View* camera;
+	sf::Vector2f cameraSize = sf::Vector2f(128, 96);
+	CurrentViewport currentViewport = FIRST;
+	sf::Vector2f position;
 
 	int height;
 };

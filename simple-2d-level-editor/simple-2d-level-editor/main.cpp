@@ -4,7 +4,14 @@
 
 #include "TestGame.cpp"
 #include "LevelEditor.cpp"
-#include "Character.h"
+
+sf::RenderWindow* currentWindow;
+Status levelEditorStatus;
+Status testGameStatus;
+Status characterStatus;
+
+LevelEditor* levelEditor;
+TestGame* testGame;
 
 sf::RenderWindow* createWindow(RunningMode mode){
 	if(mode == MODE_GAME){
@@ -15,22 +22,77 @@ sf::RenderWindow* createWindow(RunningMode mode){
 	}
 };
 
+void setCurrentWindow(){};
+
+void setCurrentViewport(sf::RenderWindow* window, CurrentViewport viewport){
+	if(viewport == DEFAULT){
+		currentWindow->setView(currentWindow->getDefaultView());
+	}
+	else{
+		auto tiles = testGame->getTiles();
+		int rows = GAME_RES_HEIGHT / TILE_SIZE + 1;
+		int columns = GAME_RES_WIDTH / TILE_SIZE;
+		for(int i = 0; i < rows; ++i){
+			for(int j = 0; j < columns; ++j){
+				if(tiles[i][j] != NULL){
+					auto& tile = tiles[i][j];
+					auto& shape = tile->shape;
+					float x;
+					switch(viewport){
+						case (FIRST) :
+							x = tile->position.x;
+							break;
+						case (SECOND) :
+							x = tile->position.y + TILE_SIZE;
+							break;
+						case (THIRD) :
+							x = GAME_RES_WIDTH - tile->position.x;
+							break;
+						case (FOURTH) :
+							x = GAME_RES_HEIGHT - tile->position.y - TILE_SIZE;
+							break;
+					}
+					shape.setPosition(x, GAME_RES_HEIGHT - tile->height);
+				}
+			}
+		}
+		sf::View* camera = testGame->getCamera();
+		currentWindow->setView(*camera);
+	}
+};
+void checkForEvents(){
+	EventQueue* eventQueue = EventQueue::getInstance(); 
+	Events* events = eventQueue->getEvents();
+	while(events->size() > 0){
+		EventTypes event = events->front();
+		if(event == CHANGE_VIEWPORT){
+			if(levelEditorStatus == RUNNING){
+				setCurrentViewport(currentWindow, levelEditor->getCurrentViewport());
+			}
+			else if(testGameStatus == RUNNING){
+				setCurrentViewport(currentWindow, testGame->getCurrentViewport());				
+			}
+		}
+		events->pop_front();
+	}
+};
+
 //TODO: think about adding a change window helper function as this is going to involve doing many things
 
 int main(){
 	sf::RenderWindow* levelEditorWindow = createWindow(MODE_LEVEL_EDITOR);
 	sf::RenderWindow* testGameWindow = NULL;
-	sf::RenderWindow* currentWindow = levelEditorWindow;
+	currentWindow = levelEditorWindow;
 
-	LevelEditor* levelEditor = new LevelEditor(currentWindow);
-	TestGame* testGame = NULL;
-	Character* character = NULL;
+	levelEditor = new LevelEditor(currentWindow);
+	testGame = NULL;
 
-	Status levelEditorStatus = RUNNING;
-	Status testGameStatus = NOT_RUNNING;
-	Status characterStatus = NOT_RUNNING;
+	levelEditorStatus = RUNNING;
+	testGameStatus = NOT_RUNNING;
+	characterStatus = NOT_RUNNING;
 
 	while(levelEditorStatus != EXITING){
+		checkForEvents();
 		currentWindow->clear();
 		switch(testGameStatus){
 			case RUNNING:
@@ -44,7 +106,7 @@ int main(){
 				testGame = NULL;
 				testGameStatus = NOT_RUNNING;
 				currentWindow = levelEditorWindow;
-				currentWindow->setView(currentWindow->getDefaultView());
+				//currentWindow->setView(currentWindow->getDefaultView());
 				break;
 			case NOT_RUNNING:
 				//check if should start new test
@@ -60,44 +122,10 @@ int main(){
 			default:
 				levelEditorStatus = levelEditor->update();
 		}
-		switch(characterStatus){
-			case RUNNING:
-				if(levelEditorStatus == RUNNING){
-					if(sf::Mouse::isButtonPressed(sf::Mouse::Middle)){
-						//change position
-						sf::Vector2i position = sf::Mouse::getPosition(*currentWindow);
-						printf("%d %d %d %d\n", position.x, position.y, position.x / TILE_SIZE, position.y / TILE_SIZE);
-						character->setPosition(position.x - position.x%TILE_SIZE, position.y - position.y%TILE_SIZE);
-					}
-					characterStatus = character->modeLevelEditorUpdate(currentWindow);
-				}
-				else{
-					characterStatus = character->modeGameUpdate(currentWindow);
-				}
-				break;
-			case EXITING:
-				character->~Character();
-				character = NULL;
-				characterStatus = NOT_RUNNING;
-				break;
-			case NOT_RUNNING:
-				//create new character
-				if(levelEditorStatus == RUNNING){
-					if(sf::Mouse::isButtonPressed(sf::Mouse::Middle)){
-						character = new Character();
-						sf::Vector2i position = sf::Mouse::getPosition(*currentWindow);
-						printf("%d %d %d %d\n", position.x, position.y, position.x / TILE_SIZE, position.y / TILE_SIZE);
-						character->setPosition(position.x - position.x%TILE_SIZE, position.y - position.y%TILE_SIZE);
-						characterStatus = RUNNING;
-					}
-				}
-			default:
-				break;
-		}
 		currentWindow->display();
 	}
 
 	currentWindow->close();
 	levelEditorWindow = NULL;
 	return 0;
-}
+};

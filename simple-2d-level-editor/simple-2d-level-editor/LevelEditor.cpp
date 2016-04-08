@@ -12,7 +12,7 @@ public:
 	LevelEditor(sf::RenderWindow* newWindow){
 		window = newWindow;
 		initMap();
-	}
+	};
 	~LevelEditor(){
 		delete window;
 	};
@@ -20,10 +20,14 @@ public:
 	sf::RenderWindow* getWindow(){
 		return window;
 	};
+
+	CurrentViewport getCurrentViewport(){
+		return currentViewport;
+	};
 	
 	inline bool outOfWindowBounds(int x, int y){
 		return x > MAP_SIZE_WIDTH || y > MAP_SIZE_HEIGHT;
-	}
+	};
 
 	Status update(){
 		sf::Event event;
@@ -31,7 +35,7 @@ public:
 			if(event.type == sf::Event::Closed){
 				return EXITING;
 			}
-			if(sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)){
+			if(event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape){
 				return EXITING;
 			}
 
@@ -56,6 +60,20 @@ public:
 			if(sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) && sf::Keyboard::isKeyPressed(sf::Keyboard::S)){
 				std::string fileName = "test.txt";
 				exportMap(fileName);
+			}			
+
+			if(sf::Mouse::isButtonPressed(sf::Mouse::Middle)){
+				sf::Vector2i position = sf::Mouse::getPosition(*window);
+				if(character == NULL){
+					character = new Character(position.x - position.x%TILE_SIZE, position.y - position.y%TILE_SIZE, MODE_LEVEL_EDITOR);
+					character->setCurrentWindow(window);
+					printf("%d %d %d %d\n", position.x, position.y, position.x / TILE_SIZE, position.y / TILE_SIZE);
+				}
+				else{
+					character->setStartPosition(position.x - position.x%TILE_SIZE, position.y - position.y%TILE_SIZE);
+					printf("%d %d %d %d\n", position.x, position.y, position.x / TILE_SIZE, position.y / TILE_SIZE);
+				}
+
 			}
 
 		}
@@ -69,15 +87,24 @@ public:
 				}
 			}
 		}
-		
+
+		//update not really needed at this time
+		if(character != NULL){//change this
+			character->modeLevelEditorUpdate();
+			window->draw(character->shape);
+		}
+
 		return RUNNING;
 	};
 
 private:
 	sf::RenderWindow* window = NULL;
+	Character* character;
 
 	typedef std::vector< std::vector<Tile*> > Tiles;
 	Tiles tiles;
+
+	CurrentViewport currentViewport = DEFAULT;
 
 	void initMap(){
 		int rows = MAP_SIZE_HEIGHT / TILE_SIZE + 1;
@@ -111,6 +138,10 @@ private:
 		int columns = MAP_SIZE_WIDTH / TILE_SIZE;
 
 		file << tagMapSize << MAP_SIZE_WIDTH << ";" << MAP_SIZE_HEIGHT << ";\n";
+		if(character != NULL){
+			file << tagID << character->id << ";" << tagPosition << character->startPosition.x << ":" << character->startPosition.y << ";\n";
+		}
+
 		for(int i = 0; i < rows; ++i){
 			for(int j = 0; j < columns; ++j){
 				if(tiles[i][j] != NULL){

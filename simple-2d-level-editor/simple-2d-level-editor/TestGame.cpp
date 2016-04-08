@@ -1,5 +1,6 @@
 #pragma once
 #include "Common.h"
+#include "Character.h"
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
@@ -19,6 +20,15 @@ public:
 	sf::RenderWindow* getWindow(){
 		return testWindow;
 	};
+	CurrentViewport getCurrentViewport(){
+		return character->getCurrentViewport();
+	};
+	sf::View* getCamera(){
+		return character->getCamera();
+	};
+	sf::Vector2f getCharacterPos(){
+		return character->getPosition();
+	};
 
 	Status update(float dt){
 		sf::Event event;
@@ -26,7 +36,7 @@ public:
 			if(event.type == sf::Event::Closed){
 				return EXITING;
 			}
-			if(sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)){
+			if(event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape){
 				return EXITING;
 			}
 
@@ -36,6 +46,7 @@ public:
 			}
 		}
 
+		//TODO: we should only draw the things that are visible to the camera not everything so use cameraPos
 		if(!error){
 			int rows = GAME_RES_HEIGHT / TILE_SIZE + 1;
 			int columns = GAME_RES_WIDTH / TILE_SIZE;
@@ -47,18 +58,26 @@ public:
 				}
 			}
 		}
-		
+		if(character != NULL){
+			character->modeGameUpdate();
+			testWindow->draw(character->shape);
+		}		
 
 		return RUNNING;
+	};
+
+	typedef std::vector< std::vector<Tile*> > Tiles;
+	Tiles tiles;//oh god moar hackz(this is used in main)
+
+	Tiles& getTiles(){
+		return tiles;
 	};
 
 private:
 	int MAP_SIZE_WIDTH;
 	int MAP_SIZE_HEIGHT;
 	sf::RenderWindow* testWindow = NULL;
-	
-	typedef std::vector< std::vector<Tile*> > Tiles;
-	Tiles tiles;
+	Character* character = NULL;	
 
 	bool error = true;// remove this
 
@@ -70,10 +89,10 @@ private:
 			std::vector<Tile*> row;
 
 			for(int j = 0; j < columns; ++j){
-				Tile* tile = new Tile();
+				Tile* tile = new Tile(sf::Vector2f(j * TILE_SIZE, i * TILE_SIZE));
 				tile->shape.setFillColor(sf::Color::Magenta);
 				tile->shape.setSize(sf::Vector2f(TILE_SIZE, TILE_SIZE));
-				tile->shape.setPosition(sf::Vector2f(j * TILE_SIZE, i * TILE_SIZE));
+				//tile->shape.setPosition(sf::Vector2f(j * TILE_SIZE, i * TILE_SIZE));
 				printf("y %d x %d\n", j * TILE_SIZE, i * TILE_SIZE);
 				row.push_back(tile);
 			}
@@ -131,11 +150,16 @@ private:
 						case POSITION:
 							posX = getNumber(buffer, ++index);
 							posY = getNumber(buffer, ++index);
-							tile = tiles[posY / TILE_SIZE][posX / TILE_SIZE];
+							if(configID == CHARACTER){
+								character = new Character(posX, posY, MODE_GAME);
+								character->setCurrentWindow(testWindow);
+							}
+							else{
+								tile = tiles[posY / TILE_SIZE][posX / TILE_SIZE];
 							
-							tile->applyTileConfig(TileConfigsCollectionGlobal[configID], MODE_GAME);
-							tile->shape.setPosition(posX, GAME_RES_HEIGHT - tile->height);
-
+								tile->applyTileConfig(TileConfigsCollectionGlobal[configID], MODE_GAME);
+								tile->shape.setPosition(posX, GAME_RES_HEIGHT - tile->height);
+							}
 							break;
 						default :
 							printf("ERROR unrecognized symbol %c in line %s", buffer[index], buffer);
