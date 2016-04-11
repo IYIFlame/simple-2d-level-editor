@@ -5,4 +5,4 @@ Simple top-down view level editor and which can load the level in a 2D sidescrol
 
 To place a red tile click with RMB, green - LMB. To place the character click scroll on mouse. LCtrl + S saves the map. LCtrl + G starts the game and LCtrl + L loads the map. You cannot really play the game yet.
 
-When playing the game you can "rotate" the camera by pressing Q and E to rotate it to the left and right respectively. Currently the objects are not correcly being drawn when rotating the camera which will be fixed next. However the basis for the rotation of the camera is in place.
+When playing the game you can "rotate" the camera by pressing Q and E to rotate it to the left and right respectively.
