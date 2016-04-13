@@ -53,16 +53,16 @@ void Character::setCurrentViewport(CurrentViewport newViewport){
 	
 	switch(currentViewport){
 		case (FIRST) :
-			//x = position.x;
+			x = position.x;
 			break;
 		case (SECOND) :
-			//x = position.y;
+			x = position.y;
 			break;
 		case (THIRD) :
-			//x = MAP_SIZE_WIDTH - position.x;
+			x = GAME_RES_WIDTH - position.x - TILE_SIZE;
 			break;
 		case (FOURTH) :
-			//x = MAP_SIZE_HEIGHT - position.y;
+			x = GAME_RES_WIDTH - position.y - TILE_SIZE;
 			break;
 		default:
 			x = position.x;
@@ -124,6 +124,10 @@ Status Character::modeGameUpdate(){
 			}
 		}
 	}
+
+
+	sf::Vector2f pos = shape.getPosition();
+	camera->setCenter(pos.x - TILE_SIZE*2 + cameraSize.x / 2, pos.y - cameraSize.y / 2 + height + TILE_SIZE);
 
 
 	return RUNNING;

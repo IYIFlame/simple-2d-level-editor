@@ -48,8 +48,8 @@ public:
 
 		//TODO: we should only draw the things that are visible to the camera not everything so use cameraPos
 		if(!error){
-			int rows = GAME_RES_HEIGHT / TILE_SIZE + 1;
-			int columns = GAME_RES_WIDTH / TILE_SIZE;
+			int rows = MAP_SIZE_HEIGHT / TILE_SIZE + 1;
+			int columns = MAP_SIZE_WIDTH / TILE_SIZE;
 			for(int i = 0; i < rows; ++i){
 				for(int j = 0; j < columns; ++j){
 					if(tiles[i][j] != NULL){

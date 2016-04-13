@@ -33,7 +33,7 @@ private:
 	sf::RenderWindow* currWindow = NULL;
 	//TestGame* game;
 	sf::View* camera;
-	sf::Vector2f cameraSize = sf::Vector2f(128, 96);
+	sf::Vector2f cameraSize = sf::Vector2f(144, 112);
 	CurrentViewport currentViewport = FIRST;
 	sf::Vector2f position;
 

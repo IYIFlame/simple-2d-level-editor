@@ -4,6 +4,8 @@
 #include <vector>
 #include <deque>
 
+//static bool DISABLE_VIEWPORTS = false;
+
 //for update functions
 enum Status{
 	NOT_RUNNING,
@@ -61,7 +63,7 @@ enum TileConfigID{
 
 //we moved this here for creating the window it should be renamed, the actual map sizes will vary per map...
 const unsigned int MAP_SIZE_WIDTH = 1024;
-const unsigned int MAP_SIZE_HEIGHT = 768;
+const unsigned int MAP_SIZE_HEIGHT = 1024;
 const int GAME_RES_WIDTH = 1024;//??
 const int GAME_RES_HEIGHT = 768;
 const unsigned int TILE_SIZE = 16;
