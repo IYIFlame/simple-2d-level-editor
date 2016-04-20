@@ -2,130 +2,136 @@
 #include <stdio.h>
 #include "Common.h"
 
-#include "TestGame.cpp"
-#include "LevelEditor.cpp"
 
-sf::RenderWindow* currentWindow;
-Status levelEditorStatus;
-Status testGameStatus;
-Status characterStatus;
+//Status levelEditorStatus;
+//Status testGameStatus;
 
-LevelEditor* levelEditor;
-TestGame* testGame;
+//LevelEditor* levelEditor;
+//TestGame* testGame;
 
-sf::RenderWindow* createWindow(RunningMode mode){
-	if(mode == MODE_GAME){
-		return new sf::RenderWindow(sf::VideoMode(GAME_RES_WIDTH, GAME_RES_HEIGHT), "FOCKEN OP GAEM M8");
-	}
-	else if(mode == MODE_LEVEL_EDITOR){
-		return new sf::RenderWindow(sf::VideoMode(MAP_SIZE_WIDTH, MAP_SIZE_HEIGHT), "FOCKEN OP EDITOR M8");
-	}
-};
+//void setCurrentViewport(sf::RenderWindow* window, CurrentViewport viewport){
+//	if(viewport == DEFAULT){
+//		currentWindow->setView(currentWindow->getDefaultView());
+//	}
+//	else{
+//		auto tiles = testGame->getTiles();
+//		int rows = MAP_SIZE_HEIGHT;
+//		int columns = MAP_SIZE_WIDTH;
+//		getRowsAndCols(rows, columns);
+//
+//		for(int i = 0; i < rows; ++i){
+//			for(int j = 0; j < columns; ++j){
+//				if(tiles[i][j] != NULL){
+//					auto& tile = tiles[i][j];
+//					auto& shape = tile->shape;
+//					float x;
+//					switch(viewport){
+//						case (FIRST) :
+//							x = tile->position.x;
+//							break;
+//						case (SECOND) :
+//							x = tile->position.y;
+//							break;
+//						case (THIRD) :
+//							x = GAME_RES_WIDTH - tile->position.x - TILE_SIZE;
+//							break;
+//						case (FOURTH) :
+//							x = GAME_RES_WIDTH - tile->position.y - TILE_SIZE;
+//							break;
+//					}
+//					shape.setPosition(x, GAME_RES_HEIGHT - tile->height);
+//				}
+//			}
+//		}
+//		sf::View* camera = testGame->getCamera();
+//		currentWindow->setView(*camera);
+//	}
+//};
 
-void setCurrentWindow(){};
-
-void setCurrentViewport(sf::RenderWindow* window, CurrentViewport viewport){
-	if(viewport == DEFAULT){
-		currentWindow->setView(currentWindow->getDefaultView());
-	}
-	else{
-		auto tiles = testGame->getTiles();
-		int rows = MAP_SIZE_HEIGHT / TILE_SIZE + 1;
-		int columns = MAP_SIZE_WIDTH / TILE_SIZE;
-		for(int i = 0; i < rows; ++i){
-			for(int j = 0; j < columns; ++j){
-				if(tiles[i][j] != NULL){
-					auto& tile = tiles[i][j];
-					auto& shape = tile->shape;
-					float x;
-					switch(viewport){
-						case (FIRST) :
-							x = tile->position.x;
-							break;
-						case (SECOND) :
-							x = tile->position.y;
-							break;
-						case (THIRD) :
-							x = GAME_RES_WIDTH - tile->position.x - TILE_SIZE;
-							break;
-						case (FOURTH) :
-							x = GAME_RES_WIDTH - tile->position.y - TILE_SIZE;
-							break;
-					}
-					shape.setPosition(x, GAME_RES_HEIGHT - tile->height);
-				}
-			}
-		}
-		sf::View* camera = testGame->getCamera();
-		currentWindow->setView(*camera);
-	}
-};
-void checkForEvents(){
-	EventQueue* eventQueue = EventQueue::getInstance(); 
-	Events* events = eventQueue->getEvents();
-	while(events->size() > 0){
-		EventTypes event = events->front();
-		if(event == CHANGE_VIEWPORT){
-			if(levelEditorStatus == RUNNING){
-				setCurrentViewport(currentWindow, levelEditor->getCurrentViewport());
-			}
-			else if(testGameStatus == RUNNING){
-				setCurrentViewport(currentWindow, testGame->getCurrentViewport());				
-			}
-		}
-		events->pop_front();
-	}
-};
+//void checkForEvents(){
+//	EventManager* eventQueue = EventManager::getInstance(); 
+//	Events* events = eventQueue->getEvents();
+//	while(events->size() > 0){
+//		EventTypes event = events->front();
+//		if(event == CHANGE_VIEWPORT){
+//			if(levelEditorStatus == RUNNING){
+//				setCurrentViewport(currentWindow, levelEditor->getCurrentViewport());
+//			}
+//			else if(testGameStatus == RUNNING){
+//				setCurrentViewport(currentWindow, testGame->getCurrentViewport());				
+//			}
+//		}
+//		events->pop_front();
+//	}
+//};
 
 //TODO: think about adding a change window helper function as this is going to involve doing many things
 
 int main(){
-	sf::RenderWindow* levelEditorWindow = createWindow(MODE_LEVEL_EDITOR);
-	sf::RenderWindow* testGameWindow = NULL;
-	currentWindow = levelEditorWindow;
+	//sf::RenderWindow* levelEditorWindow = createWindow(CONTEXT_LEVEL_EDITOR);
+	//sf::RenderWindow* testGameWindow = NULL;
+	sf::RenderWindow* currentWindow;
 
-	levelEditor = new LevelEditor(currentWindow);
-	testGame = NULL;
+	RunningContextStack* contextStack = RunningContextStack::getInstance();
+	contextStack->addRunningContext(CONTEXT_LEVEL_EDITOR);
 
-	levelEditorStatus = RUNNING;
-	testGameStatus = NOT_RUNNING;
-	characterStatus = NOT_RUNNING;
+	RunningContextsDeque* contexts = contextStack->getContexts();
+	EventManager* eventManager = EventManager::getInstance();
 
-	while(levelEditorStatus != EXITING){
-		checkForEvents();
+	//levelEditor = new LevelEditor(currentWindow);
+
+	//contexts->push_front(new LevelEditor(currentWindow));
+	
+	//testGame = NULL;
+
+	//levelEditorStatus = RUNNING;
+	//testGameStatus = NOT_RUNNING;
+
+	//while(levelEditorStatus != EXITING){
+	while(contexts->size() > 0){
+		contexts = contextStack->getContexts();
+		auto currentContext = contexts->front();
+		currentWindow = currentContext->getWindow();
+
 		currentWindow->clear();
-		switch(testGameStatus){
-			case RUNNING:
-				testGameStatus = testGame->update(0.f);
-				break;
-			case EXITING:
-				//reset pointer
-				currentWindow->close();
-				testGameWindow = NULL;
-				testGame->~TestGame();
-				testGame = NULL;
-				testGameStatus = NOT_RUNNING;
-				currentWindow = levelEditorWindow;
-				//currentWindow->setView(currentWindow->getDefaultView());
-				break;
-			case NOT_RUNNING:
-				//check if should start new test
-				if(sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) && sf::Keyboard::isKeyPressed(sf::Keyboard::G)){
-					printf("should start\n");
-					testGameWindow = createWindow(MODE_GAME);
-					currentWindow = testGameWindow;
-					testGame = new TestGame(currentWindow);
-					testGameStatus = RUNNING;
-					levelEditorStatus = SUSPENDED;
-					break;
-				}
-			default:
-				levelEditorStatus = levelEditor->update();
-		}
+		//switch(testGameStatus){
+		//	case RUNNING:
+		//		testGameStatus = currentContext->update(0.f);
+		//		break;
+		//	case EXITING:
+		//		//reset pointer
+		//		currentWindow->close();
+		//		testGameWindow = NULL;
+		//		//currentContext->~TestGame();
+
+		//		contexts->pop_front();
+		//		currentContext = contexts->front();
+		//		testGameStatus = NOT_RUNNING;
+		//		break;
+		//	case NOT_RUNNING:
+		//		//check if should start new test
+		//		if(sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) && sf::Keyboard::isKeyPressed(sf::Keyboard::G)){
+		//			printf("should start\n");
+		//			testGameWindow = createWindow(CONTEXT_GAME);
+		//			contexts->push_front(new TestGame(testGameWindow));
+		//			currentContext = contexts->front();
+
+		//			currentWindow = currentContext->getWindow();
+		//			testGameStatus = RUNNING;
+		//			levelEditorStatus = SUSPENDED;
+		//			break;
+		//		}
+		//	default:
+		//		auto editor = contexts->front();
+		//		levelEditorStatus = editor->update(0.f);
+		//}
+		currentContext->update(0.f);
 		currentWindow->display();
+
+		eventManager->update();
 	}
 
-	currentWindow->close();
-	levelEditorWindow = NULL;
+	//currentWindow->close();
+	//levelEditorWindow = NULL;
 	return 0;
 };

@@ -3,11 +3,11 @@
 
 
 Character::Character(){
-	applyTileConfig(TileConfigsCollectionGlobal[CHARACTER], MODE_GAME);
+	applyTileConfig(TileConfigsCollectionGlobal[CHARACTER], CONTEXT_GAME);
 }
 
-Character::Character(float startPosX, float startPosY, RunningMode mode){
-	applyTileConfig(TileConfigsCollectionGlobal[CHARACTER], MODE_GAME);
+Character::Character(float startPosX, float startPosY, RunningContextTypes mode){
+	applyTileConfig(TileConfigsCollectionGlobal[CHARACTER], CONTEXT_GAME);
 	setStartPosition(startPosX, startPosY);
 	resetPosition();
 	applyRunningModeSettings(mode);
@@ -16,28 +16,28 @@ Character::Character(float startPosX, float startPosY, RunningMode mode){
 Character::~Character(){
 }
 
-void Character::applyTileConfig(TileConfig config, RunningMode mode){
+void Character::applyTileConfig(TileConfig config, RunningContextTypes mode){
 	id = config.id;  
 	shape.setFillColor(config.colour);
-	if(mode == MODE_LEVEL_EDITOR){
+	if(mode == CONTEXT_LEVEL_EDITOR){
 		height = config.levelEditorSize.y;
 		shape.setRadius(height/2);
 	}
-	else if(mode == MODE_GAME){
+	else if(mode == CONTEXT_GAME){
 		height = config.inGameSize.y;
 		shape.setRadius(height/2);
 	}
 }
 
-void Character::applyRunningModeSettings(RunningMode mode){
+void Character::applyRunningModeSettings(RunningContextTypes mode){
 	if(camera == NULL){
 		camera = new sf::View(sf::Vector2f(position.x + cameraSize.x / 2, position.y + cameraSize.y / 2), cameraSize);
 	}
-	if(mode == MODE_LEVEL_EDITOR){
+	if(mode == CONTEXT_LEVEL_EDITOR){
 		shape.setPosition(startPosition.x, startPosition.y);		
 		setCurrentViewport(DEFAULT);
 	}
-	else if(mode == MODE_GAME){
+	else if(mode == CONTEXT_GAME){
 		//game = newGame;
 		setCurrentViewport(FIRST);
 		sf::Vector2f pos = shape.getPosition();
@@ -71,9 +71,9 @@ void Character::setCurrentViewport(CurrentViewport newViewport){
 	shape.setPosition(x, y);
 	
 
-	EventQueue* eventQueue = EventQueue::getInstance();
+	/*EventManager* eventQueue = EventManager::getInstance();
 	Events* events = eventQueue->getEvents();
-	events->push_back(CHANGE_VIEWPORT);
+	events->push_back(CHANGE_VIEWPORT);*/
 }
 
 void Character::setPosition(float x, float y){ 
@@ -111,7 +111,7 @@ Status Character::modeGameUpdate(){
 			if(event.key.code == sf::Keyboard::Q){
 				unsigned int newViewport = (currentViewport + NUMBER_OF_VIEWPORTS + 1) % NUMBER_OF_VIEWPORTS;
 				printf("asd %d\n", newViewport);
-				setCurrentViewport(VIEWPORTS[newViewport]);
+				//setCurrentViewport(VIEWPORTS[newViewport]);
 			}
 
 
@@ -120,7 +120,7 @@ Status Character::modeGameUpdate(){
 				//-1
 				unsigned int newViewport = (currentViewport + NUMBER_OF_VIEWPORTS - 1) % NUMBER_OF_VIEWPORTS;
 				printf("asd %d\n", newViewport);
-				setCurrentViewport(VIEWPORTS[newViewport]);
+				//setCurrentViewport(VIEWPORTS[newViewport]);
 			}
 		}
 	}

@@ -1,11 +1,12 @@
 #pragma once
-#include "Common.h"
+#include "CommonConstants.h"
+#include "TileLib.h"
 
 class Character{
 public:
 	// the camera should be initialized here possible and it should be based on the position
 	Character();
-	Character(float, float, RunningMode);
+	Character(float, float, RunningContextTypes);
 	~Character();
 
 	void move(sf::Vector2f);
@@ -13,8 +14,8 @@ public:
 	void setPosition(float, float);
 	void setStartPosition(float, float);
 	void resetPosition(){ position = startPosition; };
-	void applyTileConfig(TileConfig config, RunningMode mode);
-	void applyRunningModeSettings(RunningMode);
+	void applyTileConfig(TileConfig config, RunningContextTypes mode);
+	void applyRunningModeSettings(RunningContextTypes);
 	void setCurrentWindow(sf::RenderWindow* newWindow){ currWindow = newWindow; };
 	void setCurrentViewport(CurrentViewport);
 	sf::View* getCamera(){ return camera; };

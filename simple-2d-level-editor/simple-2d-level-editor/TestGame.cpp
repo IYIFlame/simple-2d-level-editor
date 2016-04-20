@@ -1,5 +1,6 @@
 #pragma once
-#include "Common.h"
+#include "CommonConstants.h"
+#include "RunningContext.h"
 #include "Character.h"
 #include <stdio.h>
 #include <iostream>
@@ -7,18 +8,22 @@
 #include <vector>
 
 
-class TestGame{
+class TestGame:public RunningContext{
 public:
 	TestGame(){};
 	TestGame(sf::RenderWindow* newWindow){
 		printf("creating window\n");
 		testWindow = newWindow;
 	};
-	~TestGame(){
+	virtual ~TestGame(){
+		testWindow->close();
 		delete testWindow;
 	};
-	sf::RenderWindow* getWindow(){
+	virtual sf::RenderWindow* getWindow(){
 		return testWindow;
+	};
+	RunningContextTypes getContextType(){
+		return contextType;
 	};
 	CurrentViewport getCurrentViewport(){
 		return character->getCurrentViewport();
@@ -30,7 +35,7 @@ public:
 		return character->getPosition();
 	};
 
-	Status update(float dt){
+	virtual Status update(float dt){
 		sf::Event event;
 		if(testWindow->pollEvent(event)){ 
 			if(event.type == sf::Event::Closed){
@@ -77,7 +82,8 @@ private:
 	int MAP_SIZE_WIDTH;
 	int MAP_SIZE_HEIGHT;
 	sf::RenderWindow* testWindow = NULL;
-	Character* character = NULL;	
+	Character* character = NULL;
+	RunningContextTypes contextType = CONTEXT_GAME;
 
 	bool error = true;// remove this
 
@@ -151,13 +157,13 @@ private:
 							posX = getNumber(buffer, ++index);
 							posY = getNumber(buffer, ++index);
 							if(configID == CHARACTER){
-								character = new Character(posX, posY, MODE_GAME);
+								character = new Character(posX, posY, CONTEXT_GAME);
 								character->setCurrentWindow(testWindow);
 							}
 							else{
 								tile = tiles[posY / TILE_SIZE][posX / TILE_SIZE];
 							
-								tile->applyTileConfig(TileConfigsCollectionGlobal[configID], MODE_GAME);
+								tile->applyTileConfig(TileConfigsCollectionGlobal[configID], CONTEXT_GAME);
 								tile->shape.setPosition(posX, GAME_RES_HEIGHT - tile->height);
 							}
 							break;
