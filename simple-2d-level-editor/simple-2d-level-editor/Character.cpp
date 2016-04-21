@@ -41,7 +41,7 @@ void Character::applyRunningModeSettings(RunningContextTypes mode){
 		//game = newGame;
 		setCurrentViewport(FIRST);
 		sf::Vector2f pos = shape.getPosition();
-		camera->setCenter(pos.x + cameraSize.x / 2, pos.y - cameraSize.y / 2 + height + TILE_SIZE);
+		camera->setCenter(pos.x - TILE_SIZE * 2 + cameraSize.x / 2, pos.y - cameraSize.y / 2 + height + TILE_SIZE);
 	}
 }
 //TODO: redo this horribleness!!!!
@@ -69,11 +69,7 @@ void Character::setCurrentViewport(CurrentViewport newViewport){
 			y = position.y;
 	}
 	shape.setPosition(x, y);
-	
-
-	/*EventManager* eventQueue = EventManager::getInstance();
-	Events* events = eventQueue->getEvents();
-	events->push_back(CHANGE_VIEWPORT);*/
+	camera->setCenter(x - TILE_SIZE*2 + cameraSize.x / 2, y - cameraSize.y / 2 + height + TILE_SIZE);
 }
 
 void Character::setPosition(float x, float y){ 
@@ -107,27 +103,12 @@ Status Character::modeGameUpdate(){
 			if(event.key.code == sf::Keyboard::D){
 				move(sf::Vector2f(TILE_SIZE, 0));
 			}
-
-			if(event.key.code == sf::Keyboard::Q){
-				unsigned int newViewport = (currentViewport + NUMBER_OF_VIEWPORTS + 1) % NUMBER_OF_VIEWPORTS;
-				printf("asd %d\n", newViewport);
-				//setCurrentViewport(VIEWPORTS[newViewport]);
-			}
-
-
-
-			if(event.key.code == sf::Keyboard::E){
-				//-1
-				unsigned int newViewport = (currentViewport + NUMBER_OF_VIEWPORTS - 1) % NUMBER_OF_VIEWPORTS;
-				printf("asd %d\n", newViewport);
-				//setCurrentViewport(VIEWPORTS[newViewport]);
-			}
 		}
 	}
 
 
 	sf::Vector2f pos = shape.getPosition();
-	camera->setCenter(pos.x - TILE_SIZE*2 + cameraSize.x / 2, pos.y - cameraSize.y / 2 + height + TILE_SIZE);
+	//camera->setCenter(pos.x - TILE_SIZE*2 + cameraSize.x / 2, pos.y - cameraSize.y / 2 + height + TILE_SIZE);
 
 
 	return RUNNING;

@@ -51,3 +51,5 @@ public:
 		}
 	};
 };
+
+typedef std::vector< std::vector<Tile*> > Tiles;

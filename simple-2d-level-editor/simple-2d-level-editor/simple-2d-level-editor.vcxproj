@@ -128,13 +128,16 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="RunningContext.cpp" />
     <ClCompile Include="TestGame.cpp" />
+    <ClCompile Include="WorldInterface.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Character.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="CommonConstants.h" />
+    <ClInclude Include="CommonHelperFunctions.h" />
     <ClInclude Include="RunningContext.h" />
     <ClInclude Include="TileLib.h" />
+    <ClInclude Include="WorldInterface.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -34,7 +34,7 @@ void RunningContextStack::addRunningContext(RunningContextTypes contextType){
 	}
 	else if(contextType == CONTEXT_GAME){
 		auto newWindow = createWindow(CONTEXT_GAME);
-		contexts->push_front(new TestGame(newWindow));	
+		contexts->push_front(new TestGame(newWindow));
 	}
 	else{
 		PRINT_ERROR("RunningContextStack::addRunningContext", "invalid context type received");
@@ -65,18 +65,60 @@ Events* EventManager::getEvents(){
 	return events;
 }
 
+void setCurrentViewport(RunningContext* context, CurrentViewport viewport){
+	auto window = context->getWindow();
+	if(viewport == DEFAULT){
+		window->setView(window->getDefaultView());
+	}
+	else{
+		auto tiles = context->getTiles();
+		int rows = MAP_SIZE_HEIGHT;
+		int columns = MAP_SIZE_WIDTH;
+		getRowsAndCols(rows, columns);
+
+		for(int i = 0; i < rows; ++i){
+			for(int j = 0; j < columns; ++j){
+				if(tiles[i][j] != NULL){
+					auto& tile = tiles[i][j];
+					auto& shape = tile->shape;
+					float x;
+					switch(viewport){
+						case (FIRST) :
+							x = tile->position.x;
+							break;
+						case (SECOND) :
+							x = tile->position.y;
+							break;
+						case (THIRD) :
+							x = GAME_RES_WIDTH - tile->position.x - TILE_SIZE;
+							break;
+						case (FOURTH) :
+							x = GAME_RES_WIDTH - tile->position.y - TILE_SIZE;
+							break;
+					}
+					shape.setPosition(x, GAME_RES_HEIGHT - tile->height);
+				}
+			}
+		}
+		sf::View* camera = context->getCamera();
+		//window->setView(*camera);
+		context->setCurrentViewport(viewport);
+	}
+}
+
 void EventManager::update(){
+	auto worldInterface = WorldInterface::getInstance();
 	auto contexts = RunningContextStack::getContexts();
 	if(contexts->size() > 0){
 		RunningContextTypes currentContextType = contexts->front()->getContextType();
 		RunningContext* currentContext;
 		if(currentContextType == CONTEXT_LEVEL_EDITOR){
 			currentContext = contexts->front();
-			checkEventsForEditor(currentContext);
+			checkEventsForEditor(worldInterface, currentContext);
 		}
 		else if(currentContextType == CONTEXT_GAME){
 			currentContext = contexts->front();
-			checkEventsForGame(currentContext);
+			checkEventsForGame(worldInterface, currentContext);
 		}
 		else{
 			printf("[EventManager:update] Error: unknown running context type %d", currentContextType);
@@ -84,7 +126,7 @@ void EventManager::update(){
 	}
 }
 
-void EventManager::checkEventsForEditor(RunningContext* context){
+void EventManager::checkEventsForEditor(WorldInterface* worldInterface, RunningContext* context){
 	sf::Event event;
 	auto window = context->getWindow();
 	if(window->pollEvent(event)){
@@ -107,12 +149,14 @@ void EventManager::checkEventsForEditor(RunningContext* context){
 
 		if(sf::Mouse::isButtonPressed(sf::Mouse::Left)){
 			printf("%d %d %d %d\n", position.x, position.y, position.x / TILE_SIZE, position.y / TILE_SIZE);
-			context->applyTileConfig(posX, posY, GREEN);
+			//context->applyTileConfig(posX, posY, GREEN);
+			worldInterface->applyTileConfig(posX, posY, GREEN);
 		}
 
 		if(sf::Mouse::isButtonPressed(sf::Mouse::Right)){
 			printf("%d %d %d %d\n", position.x, position.y, position.x / TILE_SIZE, position.y / TILE_SIZE);
-			context->applyTileConfig(posX, posY, RED);
+			//context->applyTileConfig(posX, posY, RED);
+			worldInterface->applyTileConfig(posX, posY, RED);
 		}
 
 		if(sf::Mouse::isButtonPressed(sf::Mouse::Middle)){
@@ -121,7 +165,8 @@ void EventManager::checkEventsForEditor(RunningContext* context){
 
 		if(sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) && sf::Keyboard::isKeyPressed(sf::Keyboard::S)){
 			std::string fileName = "test.txt";
-			context->exportMap(fileName);
+			//context->exportMap(fileName);
+			worldInterface->exportMap(fileName, context->getCharacter());
 		}
 
 		if(sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) && sf::Keyboard::isKeyPressed(sf::Keyboard::G)){
@@ -130,7 +175,7 @@ void EventManager::checkEventsForEditor(RunningContext* context){
 	}
 }
 
-void EventManager::checkEventsForGame(RunningContext* context){
+void EventManager::checkEventsForGame(WorldInterface* worldInterface, RunningContext* context){
 	sf::Event event;
 	auto window = context->getWindow();
 	if(window->pollEvent(event)){
@@ -147,8 +192,28 @@ void EventManager::checkEventsForGame(RunningContext* context){
 		int posX = position.x;
 		int posY = position.y;
 
-		if(outOfWindowBounds(posX, posY, MAP_SIZE_WIDTH, MAP_SIZE_HEIGHT)){
+		if(outOfWindowBounds(posX, posY, GAME_RES_WIDTH, GAME_RES_HEIGHT)){
 			return;
+		}
+
+		if(sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) && sf::Keyboard::isKeyPressed(sf::Keyboard::L)){
+			std::string fileName = "test.txt";
+			context->importMap(fileName);
+		}
+
+		if(event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Q){
+			CurrentViewport currentViewport = context->getCurrentViewport();
+			unsigned int newViewport = (currentViewport + NUMBER_OF_VIEWPORTS + 1) % NUMBER_OF_VIEWPORTS;
+			printf("asd %d\n", newViewport);
+			setCurrentViewport(context, VIEWPORTS[newViewport]);
+		}
+
+		if(event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::E){
+			//-1
+			CurrentViewport currentViewport = context->getCurrentViewport();
+			unsigned int newViewport = (currentViewport + NUMBER_OF_VIEWPORTS - 1) % NUMBER_OF_VIEWPORTS;
+			printf("asd %d\n", newViewport);
+			setCurrentViewport(context, VIEWPORTS[newViewport]);
 		}
 	}
 }

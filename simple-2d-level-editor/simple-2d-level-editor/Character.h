@@ -9,20 +9,19 @@ public:
 	Character(float, float, RunningContextTypes);
 	~Character();
 
-	void move(sf::Vector2f);
+	void resetPosition(){ position = startPosition; };
 	void setPosition(sf::Vector2f newPosition){ position = newPosition; };
+	void setCurrentWindow(sf::RenderWindow* newWindow){ currWindow = newWindow; };
+	CurrentViewport getCurrentViewport(){ return currentViewport; };
+	sf::View* getCamera(){ return camera; };
+	sf::Vector2f getPosition(){ return position; }
+
+	void move(sf::Vector2f);
 	void setPosition(float, float);
 	void setStartPosition(float, float);
-	void resetPosition(){ position = startPosition; };
 	void applyTileConfig(TileConfig config, RunningContextTypes mode);
 	void applyRunningModeSettings(RunningContextTypes);
-	void setCurrentWindow(sf::RenderWindow* newWindow){ currWindow = newWindow; };
 	void setCurrentViewport(CurrentViewport);
-	sf::View* getCamera(){ return camera; };
-	CurrentViewport getCurrentViewport(){ return currentViewport; };
-	sf::Vector2f getPosition(){
-		return position;
-	}
 	Status modeLevelEditorUpdate();
 	Status modeGameUpdate();
 
