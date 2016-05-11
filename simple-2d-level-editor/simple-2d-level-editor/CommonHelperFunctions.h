@@ -1,6 +1,7 @@
 #pragma once
 #include "CommonConstants.h"
 
+//put these in namespace
 static void getRowsAndCols(int& resHeight, int& resWidth){
 	resHeight = resHeight / TILE_SIZE + 1;
 	resWidth /= TILE_SIZE;

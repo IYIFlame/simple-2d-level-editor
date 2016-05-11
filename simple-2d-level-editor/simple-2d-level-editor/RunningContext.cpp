@@ -1,37 +1,35 @@
 #include "RunningContext.h"
 
-RunningContext::RunningContext(){};
+RunningContext::RunningContext(){
+	entityManager = new EntitiesManager();
+	windowManager = new WindowManager(entityManager);
+};
 RunningContext::~RunningContext(){};
+
+void RunningContext::preUpdate(){
+	windowManager->preUpdate(contextType);
+}
 
 Status RunningContext::update(float dt){
 	PRINT_ERROR("RunningContextTypes:update", "calling base class update!");
 	return RUNNING;
 };
 
+void RunningContext::postUpdate(){
+	windowManager->postUpdate(contextType);
+}
+
 RunningContextTypes RunningContext::getContextType(){
 	return contextType;
 };
 
-void RunningContext::importMap(const std::string){
-	PRINT_ERROR("RunningContextTypes::exportMap", "calling base class export map!");
-};
-
-void RunningContext::exportMap(const std::string){
-	PRINT_ERROR("RunningContextTypes::exportMap", "calling base class export map!");
-};
-
-void RunningContext::applyTileConfig(int, int, TileConfigID){
-	PRINT_ERROR("RunningContextTypes::applyTileConfig", "calling base class applyTileConfig!");
-};
+void RunningContext::loadMap(sf::Vector2f charaacterPos){
+	PRINT_ERROR("RunningContextTypes::loadMap", "calling base class loadMap!");
+}
 
 void RunningContext::updateCharacter(int, int){
 	PRINT_ERROR("RunningContext::updateCharacter", "calling base class updateCharacter!");
 };
-
-Tiles& RunningContext::getTiles(){
-	PRINT_ERROR("RunningContext::getTiles", "calling base class getTiles!");
-	return tiles;
-}
 
 sf::View* RunningContext::getCamera(){
 	PRINT_ERROR("RunningContext::getCamera", "calling base class getCamera!");
@@ -45,4 +43,12 @@ Character* RunningContext::getCharacter(){
 
 void RunningContext::setCurrentViewport(CurrentViewport newViewport){
 	PRINT_ERROR("RunningContext::setCurrentViewport", "calling base class setCurrentViewport!");
+}
+
+WindowManager* RunningContext::getWindowManager(){
+	return windowManager;
+}
+
+EntitiesManager* RunningContext::getEntitiesManager(){
+	return entityManager;
 }

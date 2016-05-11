@@ -29,15 +29,20 @@ RunningContextsDeque* RunningContextStack::getContexts(){
 
 void RunningContextStack::addRunningContext(RunningContextTypes contextType){
 	if(contextType == CONTEXT_LEVEL_EDITOR){
-		auto newWindow = createWindow(CONTEXT_LEVEL_EDITOR);
-		contexts->push_front(new LevelEditor(newWindow));
+		//auto newWindow = createWindow(CONTEXT_LEVEL_EDITOR);
+		contexts->push_front(new LevelEditor());
 	}
 	else if(contextType == CONTEXT_GAME){
-		auto newWindow = createWindow(CONTEXT_GAME);
-		contexts->push_front(new TestGame(newWindow));
+		//auto newWindow = createWindow(CONTEXT_GAME);
+		contexts->push_front(new TestGame());
 	}
 	else{
 		PRINT_ERROR("RunningContextStack::addRunningContext", "invalid context type received");
+	}
+	//TODO oh god oh god oh god oh god oh god
+	auto firstContext = contexts->front();
+	if(firstContext != NULL){
+		EventManager::getInstance()->setWindowManager(firstContext->getWindowManager());
 	}
 }
 
@@ -46,10 +51,17 @@ void RunningContextStack::removeRunningContext(RunningContext* context){
 		contexts->pop_front();
 		context->~RunningContext();
 	}
+	//TODO oh god oh god oh god oh god oh god
+	auto firstContext = contexts->front();
+	if(firstContext != NULL){
+		EventManager::getInstance()->setWindowManager(firstContext->getWindowManager());
+	}
 }
 
 EventManager* EventManager::_instance = NULL;
 Events* EventManager::events = NULL;
+WindowManager* EventManager::windowManager = NULL;
+
 EventManager* EventManager::getInstance(){
 	if(_instance == NULL)
 		_instance = new EventManager(); //Not thread-safe version
@@ -65,47 +77,52 @@ Events* EventManager::getEvents(){
 	return events;
 }
 
+void EventManager::setWindowManager(WindowManager* windowManager){
+	EventManager::windowManager = windowManager;
+}
+
 void setCurrentViewport(RunningContext* context, CurrentViewport viewport){
-	auto window = context->getWindow();
+	//auto window = context->getWindowManager()->getWindow(context->getContextType());
 	if(viewport == DEFAULT){
-		window->setView(window->getDefaultView());
+		//window->setView(window->getDefaultView());
 	}
 	else{
-		auto tiles = context->getTiles();
-		int rows = MAP_SIZE_HEIGHT;
-		int columns = MAP_SIZE_WIDTH;
-		getRowsAndCols(rows, columns);
+		//auto tiles = context->getTiles();
+		//int rows = MAP_SIZE_HEIGHT;
+		//int columns = MAP_SIZE_WIDTH;
+		//getRowsAndCols(rows, columns);
 
-		for(int i = 0; i < rows; ++i){
-			for(int j = 0; j < columns; ++j){
-				if(tiles[i][j] != NULL){
-					auto& tile = tiles[i][j];
-					auto& shape = tile->shape;
-					float x;
-					switch(viewport){
-						case (FIRST) :
-							x = tile->position.x;
-							break;
-						case (SECOND) :
-							x = tile->position.y;
-							break;
-						case (THIRD) :
-							x = GAME_RES_WIDTH - tile->position.x - TILE_SIZE;
-							break;
-						case (FOURTH) :
-							x = GAME_RES_WIDTH - tile->position.y - TILE_SIZE;
-							break;
-					}
-					shape.setPosition(x, GAME_RES_HEIGHT - tile->height);
-				}
-			}
-		}
-		sf::View* camera = context->getCamera();
-		//window->setView(*camera);
-		context->setCurrentViewport(viewport);
+		//for(int i = 0; i < rows; ++i){
+		//	for(int j = 0; j < columns; ++j){
+		//		if(tiles[i][j] != NULL){
+		//			auto& tile = tiles[i][j];
+		//			auto& shape = tile->shape;
+		//			float x;
+		//			switch(viewport){
+		//				case (FIRST) :
+		//					x = tile->position.x;
+		//					break;
+		//				case (SECOND) :
+		//					x = tile->position.y;
+		//					break;
+		//				case (THIRD) :
+		//					x = GAME_RES_WIDTH - tile->position.x - TILE_SIZE;
+		//					break;
+		//				case (FOURTH) :
+		//					x = GAME_RES_WIDTH - tile->position.y - TILE_SIZE;
+		//					break;
+		//			}
+		//			shape.setPosition(x, GAME_RES_HEIGHT - tile->height);
+		//		}
+		//	}
+		//}
+		//sf::View* camera = context->getCamera();
+		////window->setView(*camera);
+		//context->setCurrentViewport(viewport);
 	}
 }
 
+//void EventManager::update(RunningContextsDeque* contexts){//add the world interface here later
 void EventManager::update(){
 	auto worldInterface = WorldInterface::getInstance();
 	auto contexts = RunningContextStack::getContexts();
@@ -128,13 +145,15 @@ void EventManager::update(){
 
 void EventManager::checkEventsForEditor(WorldInterface* worldInterface, RunningContext* context){
 	sf::Event event;
-	auto window = context->getWindow();
+	auto window = windowManager->getWindow(CONTEXT_LEVEL_EDITOR);
 	if(window->pollEvent(event)){
 		if(event.type == sf::Event::Closed){
+			windowManager->destroyWindow(CONTEXT_LEVEL_EDITOR);
 			RunningContextStack::removeRunningContext(context);
 			return;
 		}
 		if(event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape){
+			windowManager->destroyWindow(CONTEXT_LEVEL_EDITOR);
 			RunningContextStack::removeRunningContext(context);
 			return;
 		}
@@ -146,7 +165,7 @@ void EventManager::checkEventsForEditor(WorldInterface* worldInterface, RunningC
 		if(outOfWindowBounds(posX, posY, MAP_SIZE_WIDTH, MAP_SIZE_HEIGHT)){
 			return;
 		}
-
+		
 		if(sf::Mouse::isButtonPressed(sf::Mouse::Left)){
 			printf("%d %d %d %d\n", position.x, position.y, position.x / TILE_SIZE, position.y / TILE_SIZE);
 			//context->applyTileConfig(posX, posY, GREEN);
@@ -158,7 +177,7 @@ void EventManager::checkEventsForEditor(WorldInterface* worldInterface, RunningC
 			//context->applyTileConfig(posX, posY, RED);
 			worldInterface->applyTileConfig(posX, posY, RED);
 		}
-
+		
 		if(sf::Mouse::isButtonPressed(sf::Mouse::Middle)){
 			context->updateCharacter(posX, posY);
 		}
@@ -168,8 +187,9 @@ void EventManager::checkEventsForEditor(WorldInterface* worldInterface, RunningC
 			//context->exportMap(fileName);
 			worldInterface->exportMap(fileName, context->getCharacter());
 		}
-
+		
 		if(sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) && sf::Keyboard::isKeyPressed(sf::Keyboard::G)){
+			windowManager->createWindow(CONTEXT_GAME);
 			RunningContextStack::addRunningContext(CONTEXT_GAME);
 		}
 	}
@@ -177,13 +197,15 @@ void EventManager::checkEventsForEditor(WorldInterface* worldInterface, RunningC
 
 void EventManager::checkEventsForGame(WorldInterface* worldInterface, RunningContext* context){
 	sf::Event event;
-	auto window = context->getWindow();
+	auto window = windowManager->getWindow(CONTEXT_GAME);
 	if(window->pollEvent(event)){
 		if(event.type == sf::Event::Closed){
+			windowManager->destroyWindow(CONTEXT_GAME);
 			RunningContextStack::removeRunningContext(context);
 			return;
 		}
 		if(event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape){
+			windowManager->destroyWindow(CONTEXT_GAME);
 			RunningContextStack::removeRunningContext(context);
 			return;
 		}
@@ -198,9 +220,10 @@ void EventManager::checkEventsForGame(WorldInterface* worldInterface, RunningCon
 
 		if(sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) && sf::Keyboard::isKeyPressed(sf::Keyboard::L)){
 			std::string fileName = "test.txt";
-			context->importMap(fileName);
+			sf::Vector2f characterPos = worldInterface->importMap(fileName);
+			context->loadMap(characterPos);
 		}
-
+		/*
 		if(event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Q){
 			CurrentViewport currentViewport = context->getCurrentViewport();
 			unsigned int newViewport = (currentViewport + NUMBER_OF_VIEWPORTS + 1) % NUMBER_OF_VIEWPORTS;
@@ -214,6 +237,6 @@ void EventManager::checkEventsForGame(WorldInterface* worldInterface, RunningCon
 			unsigned int newViewport = (currentViewport + NUMBER_OF_VIEWPORTS - 1) % NUMBER_OF_VIEWPORTS;
 			printf("asd %d\n", newViewport);
 			setCurrentViewport(context, VIEWPORTS[newViewport]);
-		}
+		}*/
 	}
 }

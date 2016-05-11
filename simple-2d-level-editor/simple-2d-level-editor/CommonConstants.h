@@ -1,6 +1,6 @@
 #pragma once
 
-//for update functions
+//for update functions. Might not be needed in the future
 enum Status{
 	NOT_RUNNING,
 	RUNNING,

@@ -1,6 +1,10 @@
 #include "WorldInterface.h"
 
 WorldInterface* WorldInterface::_instance = NULL;
+Tiles* WorldInterface::levelEditorTiles = NULL;
+Tiles* WorldInterface::gameTiles = NULL;
+unsigned int WorldInterface::loadedMapHeight = 0;
+unsigned int WorldInterface::loadedMapWidth = 0;
 
 WorldInterface* WorldInterface::getInstance(){
 	if(_instance == NULL)
@@ -11,10 +15,37 @@ WorldInterface* WorldInterface::getInstance(){
 	//it exists for the entire lifetime of the program!
 }
 
+Tiles* WorldInterface::getRunningContextTiles(RunningContextTypes contextType){
+	if(contextType == CONTEXT_LEVEL_EDITOR){
+		if(levelEditorTiles == NULL){
+			levelEditorTiles = new Tiles();
+		}
+		return levelEditorTiles;
+	}
+	else if(contextType == CONTEXT_GAME){
+		if(gameTiles == NULL){
+			gameTiles = new Tiles();
+		}
+		return gameTiles;
+	}
+	else{
+		PRINT_ERROR("WorldInterface::getRunningContextTiles", "received unknown running context type");
+	}
+	return NULL;
+}
+
+
+void WorldInterface::getLoadedMapHeightAndWidth(int& height, int& width){
+	height = loadedMapHeight;
+	width = loadedMapWidth;
+}
+
 void WorldInterface::initMap(){
+	printf("Initializing empty map\n");
 	int rows = MAP_SIZE_HEIGHT;
 	int columns = MAP_SIZE_WIDTH;
 	getRowsAndCols(rows, columns);
+	Tiles* levelEditorTiles = getRunningContextTiles(CONTEXT_LEVEL_EDITOR);
 
 	printf("rows %d columns %d\n", rows, columns);
 	for(int i = 0; i < rows; ++i){
@@ -27,7 +58,7 @@ void WorldInterface::initMap(){
 			printf("y %d x %d\n", j * TILE_SIZE, i * TILE_SIZE);
 			row.push_back(tile);
 		}
-		levelEditorTiles.push_back(row);
+		levelEditorTiles->push_back(row);
 	}
 }
 
@@ -53,9 +84,9 @@ void WorldInterface::exportMap(const std::string fileName, Character* character)
 
 	for(int i = 0; i < rows; ++i){
 		for(int j = 0; j < columns; ++j){
-			if(levelEditorTiles[i][j] != NULL){
-				auto tileShape = levelEditorTiles[i][j]->shape;
-				TileConfigID id = levelEditorTiles[i][j]->id;
+			if((*levelEditorTiles)[i][j] != NULL){
+				auto tileShape = (*levelEditorTiles)[i][j]->shape;
+				TileConfigID id = (*levelEditorTiles)[i][j]->id;
 				int posX = tileShape.getPosition().x;
 				int posY = tileShape.getPosition().y;
 
@@ -69,8 +100,11 @@ void WorldInterface::exportMap(const std::string fileName, Character* character)
 
 //merge this and initMap into one function, give RunningContextTypes, mapWidth and height as parameters
 void WorldInterface::initEmptyMap(){
-	int rows = MAP_SIZE_HEIGHT / TILE_SIZE + 1;
-	int columns = MAP_SIZE_WIDTH / TILE_SIZE;
+	int rows = MAP_SIZE_HEIGHT;
+	int columns = MAP_SIZE_WIDTH;
+	getRowsAndCols(rows, columns);
+	Tiles* gameTiles = getRunningContextTiles(CONTEXT_GAME);
+
 	printf("rows %d columns %d\n", rows, columns);
 	for(int i = 0; i < rows; ++i){
 		std::vector<Tile*> row;
@@ -82,9 +116,8 @@ void WorldInterface::initEmptyMap(){
 			printf("y %d x %d\n", j * TILE_SIZE, i * TILE_SIZE);
 			row.push_back(tile);
 		}
-		gameTiles.push_back(row);
+		gameTiles->push_back(row);
 	}
-	//error = false;
 }
 
 int WorldInterface::getNumber(char* buffer, int& index){
@@ -143,7 +176,7 @@ sf::Vector2f WorldInterface::importMap(const std::string fileName){
 							characterPosition = sf::Vector2f(posX, posY);
 						}
 						else{
-							tile = gameTiles[posY / TILE_SIZE][posX / TILE_SIZE];
+							tile = (*gameTiles)[posY / TILE_SIZE][posX / TILE_SIZE];
 
 							tile->applyTileConfig(TileConfigsCollectionGlobal[configID], CONTEXT_GAME);
 							tile->shape.setPosition(posX, GAME_RES_HEIGHT - tile->height);
@@ -165,15 +198,16 @@ sf::Vector2f WorldInterface::importMap(const std::string fileName){
 }
 
 void WorldInterface::applyTileConfig(int posX, int posY, TileConfigID tileConfigID){
-	Tile* tile = levelEditorTiles[posY / TILE_SIZE][posX / TILE_SIZE];
-	tile->applyTileConfig(TileConfigsCollectionGlobal[tileConfigID], CONTEXT_LEVEL_EDITOR);
+	Tile* tile = (*levelEditorTiles)[posY / TILE_SIZE][posX / TILE_SIZE];
+	tile->applyTileConfig(TileConfigsCollectionGlobal[tileConfigID], CONTEXT_LEVEL_EDITOR);//hardcoded enum
 }
 
 void WorldInterface::drawTiles(sf::RenderWindow* currentWindow, RunningContextTypes contextType){
-	int rows = MAP_SIZE_HEIGHT;
+	PRINT_ERROR("WorldInterface::drawTiles", "this shit is being called from somewhere!");
+	/*int rows = MAP_SIZE_HEIGHT;
 	int columns = MAP_SIZE_WIDTH;
 	getRowsAndCols(rows, columns);
-	Tiles tiles;
+	Tiles* tiles = NULL;
 
 	if(contextType == CONTEXT_LEVEL_EDITOR){
 		tiles = levelEditorTiles;
@@ -182,14 +216,15 @@ void WorldInterface::drawTiles(sf::RenderWindow* currentWindow, RunningContextTy
 		tiles = gameTiles;
 	}
 	else{
-		//PRINT_ERROR
+		PRINT_ERROR("WorldInterface::drawTiles", "received unknown running context type");
+		return;
 	}
 
 	for(int i = 0; i < rows; ++i){
 		for(int j = 0; j < columns; ++j){
-			if(tiles[i][j] != NULL){
-				currentWindow->draw(tiles[i][j]->shape);
+			if((*tiles)[i][j] != NULL){
+				currentWindow->draw((*tiles)[i][j]->shape);
 			}
 		}
-	}
+	}*/
 }

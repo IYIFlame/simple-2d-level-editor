@@ -1,8 +1,9 @@
 #pragma once
 #include "CommonConstants.h"
 #include "TileLib.h"
+#include "Entity.h"
 
-class Character{
+class Character:public Entity{
 public:
 	// the camera should be initialized here possible and it should be based on the position
 	Character();
@@ -26,10 +27,11 @@ public:
 	Status modeGameUpdate();
 
 	TileConfigID id;
-	sf::CircleShape shape = sf::CircleShape(TILE_SIZE);
 	sf::Vector2f startPosition;
-
-private:
+protected:
+//contextType
+private://TODO lot of this will be protected not private...
+	//sf::CircleShape shape = sf::CircleShape(TILE_SIZE);
 	sf::RenderWindow* currWindow = NULL;
 	//TestGame* game;
 	sf::View* camera;

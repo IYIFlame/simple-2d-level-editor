@@ -6,11 +6,12 @@ Character::Character(){
 	applyTileConfig(TileConfigsCollectionGlobal[CHARACTER], CONTEXT_GAME);
 }
 
-Character::Character(float startPosX, float startPosY, RunningContextTypes mode){
+Character::Character(float startPosX, float startPosY, RunningContextTypes contextType){
+	this->contextType = contextType;
 	applyTileConfig(TileConfigsCollectionGlobal[CHARACTER], CONTEXT_GAME);
 	setStartPosition(startPosX, startPosY);
 	resetPosition();
-	applyRunningModeSettings(mode);
+	applyRunningModeSettings(contextType);
 }
 
 Character::~Character(){

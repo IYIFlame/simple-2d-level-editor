@@ -124,10 +124,13 @@
   <ItemGroup>
     <ClCompile Include="Character.cpp" />
     <ClCompile Include="Common.cpp" />
+    <ClCompile Include="EntitiesManager.cpp" />
+    <ClCompile Include="Entity.cpp" />
     <ClCompile Include="LevelEditor.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="RunningContext.cpp" />
     <ClCompile Include="TestGame.cpp" />
+    <ClCompile Include="WindowManager.cpp" />
     <ClCompile Include="WorldInterface.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -135,8 +138,11 @@
     <ClInclude Include="Common.h" />
     <ClInclude Include="CommonConstants.h" />
     <ClInclude Include="CommonHelperFunctions.h" />
+    <ClInclude Include="EntitiesManager.h" />
+    <ClInclude Include="Entity.h" />
     <ClInclude Include="RunningContext.h" />
     <ClInclude Include="TileLib.h" />
+    <ClInclude Include="WindowManager.h" />
     <ClInclude Include="WorldInterface.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
