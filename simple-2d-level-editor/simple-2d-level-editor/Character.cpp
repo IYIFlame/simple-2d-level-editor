@@ -96,14 +96,14 @@ void Character::move(sf::Vector2f direction){
 }
 
 void Character::update(){
-	sf::Event event;
+	/*sf::Event event;
 	if(currWindow->pollEvent(event)){
 		if(event.type == sf::Event::KeyPressed){
 			if(event.key.code == sf::Keyboard::D){
 				move(sf::Vector2f(TILE_SIZE, 0));
 			}
 		}
-	}
+	}*/
 
 
 	sf::Vector2f pos = shape.getPosition();

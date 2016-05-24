@@ -77,7 +77,6 @@ void setCurrentViewport(RunningContext* context, CurrentViewport viewport){
 	}
 }
 
-//void EventManagerr::update(RunningContextsDeque* contexts, RunningContextStack* stack, ){//add the world interface here later
 void EventManager::update(RunningContextStack* contextStack){
 	RunningContextsDeque* contexts = contextStack->getContexts();
 	if(contexts->size() > 0){
@@ -102,15 +101,26 @@ void EventManager::checkEventsForEditor(RunningContextStack* contextStack, Runni
 	auto window = windowManager->getWindow();
 	if(window->pollEvent(event)){
 		if(event.type == sf::Event::Closed){
-			//windowManager->destroyWindow();// TODO: FIX THIS!!!! WE SHOULD CALL DESTRUCTOR OF RUNNING CONTEXT AND HAVE IT HANDLE ITS SYSTEMS
 			removeRunningContext(contextStack, context);
 			return;
 		}
 		if(event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape){
-			//windowManager->destroyWindow();// TODO: FIX THIS!!!! WE SHOULD CALL DESTRUCTOR OF RUNNING CONTEXT AND HAVE IT HANDLE ITS SYSTEMS
 			removeRunningContext(contextStack, context);
 			return;
 		}
+
+		if(sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) && sf::Keyboard::isKeyPressed(sf::Keyboard::S)){
+			std::string fileName = "test.txt";
+			//context->exportMap(fileName);
+			worldInterface->exportMap(fileName, context->getCharacter());
+		}
+
+		if(sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) && sf::Keyboard::isKeyPressed(sf::Keyboard::G)){
+			//windowManager->createWindow(CONTEXT_GAME);
+			addRunningContext(contextStack, CONTEXT_GAME);
+		}
+
+		//below this point is the code that should be executed only if the mouse is inside the window
 
 		sf::Vector2i position = sf::Mouse::getPosition(*window);
 		int posX = position.x;
@@ -135,17 +145,6 @@ void EventManager::checkEventsForEditor(RunningContextStack* contextStack, Runni
 		if(sf::Mouse::isButtonPressed(sf::Mouse::Middle)){
 			context->updateCharacter(posX, posY);
 		}
-
-		if(sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) && sf::Keyboard::isKeyPressed(sf::Keyboard::S)){
-			std::string fileName = "test.txt";
-			//context->exportMap(fileName);
-			worldInterface->exportMap(fileName, context->getCharacter());
-		}
-
-		if(sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) && sf::Keyboard::isKeyPressed(sf::Keyboard::G)){
-			//windowManager->createWindow(CONTEXT_GAME);
-			addRunningContext(contextStack, CONTEXT_GAME);
-		}
 	}
 }
 
@@ -154,25 +153,15 @@ void EventManager::checkEventsForGame(RunningContextStack* contextStack, Running
 	auto window = windowManager->getWindow();
 	if(window->pollEvent(event)){
 		if(event.type == sf::Event::Closed){
-			//windowManager->destroyWindow();// TODO: FIX THIS!!!! WE SHOULD CALL DESTRUCTOR OF RUNNING CONTEXT AND HAVE IT HANDLE ITS SYSTEMS
 			removeRunningContext(contextStack, context);
 			return;
 		}
 		if(event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape){
-			//windowManager->destroyWindow();// TODO: FIX THIS!!!! WE SHOULD CALL DESTRUCTOR OF RUNNING CONTEXT AND HAVE IT HANDLE ITS SYSTEMS
 			removeRunningContext(contextStack, context);
 			return;
 		}
 
-		sf::Vector2i position = sf::Mouse::getPosition(*window);
-		int posX = position.x;
-		int posY = position.y;
-
-		if(outOfWindowBounds(posX, posY, GAME_RES_WIDTH, GAME_RES_HEIGHT)){
-			return;
-		}
-
-		WorldInterface* worldInterface = context->getWorldInterface();
+		//WorldInterface* worldInterface = context->getWorldInterface();
 
 		if(sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) && sf::Keyboard::isKeyPressed(sf::Keyboard::L)){
 			std::string fileName = "test.txt";
@@ -194,5 +183,15 @@ void EventManager::checkEventsForGame(RunningContextStack* contextStack, Running
 		printf("asd %d\n", newViewport);
 		setCurrentViewport(context, VIEWPORTS[newViewport]);
 		}*/
+
+		//below this point is the code that should be executed only if the mouse is inside the window
+
+		sf::Vector2i position = sf::Mouse::getPosition(*window);
+		int posX = position.x;
+		int posY = position.y;
+
+		if(outOfWindowBounds(posX, posY, GAME_RES_WIDTH, GAME_RES_HEIGHT)){
+			return;
+		}
 	}
 }

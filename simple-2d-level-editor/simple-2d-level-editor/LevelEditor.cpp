@@ -20,8 +20,6 @@ public:
 	};
 
 	~LevelEditor(){
-		/*window->close();
-		delete window;*/
 	};
 
 	RunningContextTypes getContextType(){
@@ -37,8 +35,6 @@ public:
 	};
 
 	Status update(float dt){
-		//entityManager->update();
-
 		return RUNNING;
 	};
 

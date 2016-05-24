@@ -20,8 +20,6 @@ public:
 	};
 
 	~TestGame(){
-		/*testWindow->close();
-		delete testWindow;*/
 	};
 
 	RunningContextTypes getContextType(){
