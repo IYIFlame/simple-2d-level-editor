@@ -1,5 +1,5 @@
 # simple-2d-level-editor
-!!!!!! The base-code-rework branch is work in progress. It does not yet have all the features of the main branch. I started it with the idea of reworking my existing code base as I then had a better idea of how things would be coupled. A camera and camera manager classes still need to be implemented in order to rotate the view like in Fez. This is the only feaure from the main branch that has yet to be implemented.
+!!!!!! The base-code-rework branch is work in progress. It does not yet have all the features of the main branch. However the code inside it is of much greater quality. I started it with the idea of reworking my existing code base as I then had a better idea of how things would be coupled. A camera and camera manager classes still need to be implemented in order to rotate the view like in Fez. This is the only feaure from the main branch that has yet to be implemented.
 
 !!!!!! This is very early stages and all is subject to change. !!!!!!
 
