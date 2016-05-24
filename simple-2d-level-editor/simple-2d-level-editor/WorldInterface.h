@@ -4,30 +4,39 @@
 
 #include "TileLib.h"
 #include "Character.h"
-#include "WindowManager.h"
 #include "CommonConstants.h"
 #include "CommonHelperFunctions.h"
 
 class WorldInterface{
-private:
-	static WorldInterface* _instance;
-	static Tiles* levelEditorTiles;
-	static Tiles* gameTiles;
-	static unsigned int loadedMapWidth;
-	static unsigned int loadedMapHeight;
+	RunningContextTypes contextType = CONTEXT_INVALID;
+	Tiles* tiles = NULL;
+	unsigned int loadedMapWidth;//TODO: when looping we should always be using this instead of size or MAP_WIDTH and HEIGHT
+	unsigned int loadedMapHeight;
 
-	WorldInterface(){};
+	int getNumber(char*, int&);//TODO prolly should be private
 public:
-	static WorldInterface* getInstance();
-	static Tiles* getRunningContextTiles(RunningContextTypes);
-	static void getLoadedMapHeightAndWidth(int&, int&);
 
-	static void initMap();
-	static void initEmptyMap();
-	static int getNumber(char*, int&);//prolly should be private
-	static void exportMap(const std::string, Character*);//think about passing character pos instead of whole character
-	static sf::Vector2f importMap(const std::string);
-	static void applyTileConfig(int posX, int posY, TileConfigID tileConfigID);
-	static void WorldInterface::drawTiles(sf::RenderWindow*, RunningContextTypes);
-	//static void rotateWorld();
+	WorldInterface();
+	
+	WorldInterface(RunningContextTypes);
+
+	~WorldInterface();
+
+	void setContextType(RunningContextTypes);
+
+	Tiles* getRunningContextTiles();
+
+	void getLoadedMapHeightAndWidth(int&, int&);
+
+	void initMap();
+
+	//void initEmptyMap();
+
+	void exportMap(const std::string, Character*);//think about passing character pos instead of whole character
+
+	sf::Vector2f importMap(const std::string);
+
+	void applyTileConfig(int posX, int posY, TileConfigID tileConfigID);
+
+	//static void rotateWorld(); //TODO should this be here?
 };

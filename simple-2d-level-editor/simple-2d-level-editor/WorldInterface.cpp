@@ -1,39 +1,33 @@
 #include "WorldInterface.h"
 
-WorldInterface* WorldInterface::_instance = NULL;
-Tiles* WorldInterface::levelEditorTiles = NULL;
-Tiles* WorldInterface::gameTiles = NULL;
-unsigned int WorldInterface::loadedMapHeight = 0;
-unsigned int WorldInterface::loadedMapWidth = 0;
-
-WorldInterface* WorldInterface::getInstance(){
-	if(_instance == NULL)
-		_instance = new WorldInterface(); //Not thread-safe version
-	return _instance;
-
-	//Note that _instance is *never* deleted - 
-	//it exists for the entire lifetime of the program!
+WorldInterface::WorldInterface(){
+	tiles = new Tiles();
 }
 
-Tiles* WorldInterface::getRunningContextTiles(RunningContextTypes contextType){
-	if(contextType == CONTEXT_LEVEL_EDITOR){
-		if(levelEditorTiles == NULL){
-			levelEditorTiles = new Tiles();
-		}
-		return levelEditorTiles;
-	}
-	else if(contextType == CONTEXT_GAME){
-		if(gameTiles == NULL){
-			gameTiles = new Tiles();
-		}
-		return gameTiles;
-	}
-	else{
-		PRINT_ERROR("WorldInterface::getRunningContextTiles", "received unknown running context type");
-	}
-	return NULL;
+WorldInterface::WorldInterface(RunningContextTypes contextType){
+	this->contextType = contextType;
+	tiles = new Tiles();
 }
 
+WorldInterface::~WorldInterface(){
+	TileVector row;
+	//TODO: remake it to use loaded_map_width and height
+	for(int i = 0; i < tiles->size(); ++i){
+		row = tiles->at(i);
+		for(int j = 0; j < row.size(); ++j){
+			delete row[j];
+		}
+	}
+	delete tiles;
+}
+
+void WorldInterface::setContextType(RunningContextTypes contextType){
+	this->contextType = contextType;
+}
+
+Tiles* WorldInterface::getRunningContextTiles(){
+	return tiles;
+}
 
 void WorldInterface::getLoadedMapHeightAndWidth(int& height, int& width){
 	height = loadedMapHeight;
@@ -42,10 +36,15 @@ void WorldInterface::getLoadedMapHeightAndWidth(int& height, int& width){
 
 void WorldInterface::initMap(){
 	printf("Initializing empty map\n");
+
+	TileConfig tileConfig = TileConfigsCollectionGlobal[INVALID];
+	if(contextType == CONTEXT_LEVEL_EDITOR){
+		tileConfig = TileConfigsCollectionGlobal[GREEN];
+	}
+
 	int rows = MAP_SIZE_HEIGHT;
 	int columns = MAP_SIZE_WIDTH;
 	getRowsAndCols(rows, columns);
-	Tiles* levelEditorTiles = getRunningContextTiles(CONTEXT_LEVEL_EDITOR);
 
 	printf("rows %d columns %d\n", rows, columns);
 	for(int i = 0; i < rows; ++i){
@@ -53,12 +52,12 @@ void WorldInterface::initMap(){
 
 		for(int j = 0; j < columns; ++j){
 			Tile* tile = new Tile();
-			tile->applyTileConfig(TileConfigsCollectionGlobal[GREEN], CONTEXT_LEVEL_EDITOR);
+			tile->applyTileConfig(tileConfig, contextType);
 			tile->shape.setPosition(sf::Vector2f(j * TILE_SIZE, i * TILE_SIZE));
-			printf("y %d x %d\n", j * TILE_SIZE, i * TILE_SIZE);
+			//printf("y %d x %d\n", j * TILE_SIZE, i * TILE_SIZE);
 			row.push_back(tile);
 		}
-		levelEditorTiles->push_back(row);
+		tiles->push_back(row);
 	}
 }
 
@@ -84,9 +83,9 @@ void WorldInterface::exportMap(const std::string fileName, Character* character)
 
 	for(int i = 0; i < rows; ++i){
 		for(int j = 0; j < columns; ++j){
-			if((*levelEditorTiles)[i][j] != NULL){
-				auto tileShape = (*levelEditorTiles)[i][j]->shape;
-				TileConfigID id = (*levelEditorTiles)[i][j]->id;
+			if((*tiles)[i][j] != NULL){
+				auto tileShape = (*tiles)[i][j]->shape;
+				TileConfigID id = (*tiles)[i][j]->id;
 				int posX = tileShape.getPosition().x;
 				int posY = tileShape.getPosition().y;
 
@@ -96,28 +95,6 @@ void WorldInterface::exportMap(const std::string fileName, Character* character)
 	}
 	printf("Complete!\n");
 	file.close();
-}
-
-//merge this and initMap into one function, give RunningContextTypes, mapWidth and height as parameters
-void WorldInterface::initEmptyMap(){
-	int rows = MAP_SIZE_HEIGHT;
-	int columns = MAP_SIZE_WIDTH;
-	getRowsAndCols(rows, columns);
-	Tiles* gameTiles = getRunningContextTiles(CONTEXT_GAME);
-
-	printf("rows %d columns %d\n", rows, columns);
-	for(int i = 0; i < rows; ++i){
-		std::vector<Tile*> row;
-
-		for(int j = 0; j < columns; ++j){
-			Tile* tile = new Tile(sf::Vector2f(j * TILE_SIZE, i * TILE_SIZE));
-			tile->shape.setFillColor(sf::Color::Magenta);
-			tile->shape.setSize(sf::Vector2f(TILE_SIZE, TILE_SIZE));
-			printf("y %d x %d\n", j * TILE_SIZE, i * TILE_SIZE);
-			row.push_back(tile);
-		}
-		gameTiles->push_back(row);
-	}
 }
 
 int WorldInterface::getNumber(char* buffer, int& index){
@@ -162,7 +139,7 @@ sf::Vector2f WorldInterface::importMap(const std::string fileName){
 					case MAP_SIZE:
 						loadedMapWidth = getNumber(buffer, ++index);
 						loadedMapHeight = getNumber(buffer, ++index);
-						initEmptyMap();
+						initMap();
 						break;
 					case ID:
 						configID = getNumber(buffer, ++index);
@@ -176,7 +153,7 @@ sf::Vector2f WorldInterface::importMap(const std::string fileName){
 							characterPosition = sf::Vector2f(posX, posY);
 						}
 						else{
-							tile = (*gameTiles)[posY / TILE_SIZE][posX / TILE_SIZE];
+							tile = (*tiles)[posY / TILE_SIZE][posX / TILE_SIZE];
 
 							tile->applyTileConfig(TileConfigsCollectionGlobal[configID], CONTEXT_GAME);
 							tile->shape.setPosition(posX, GAME_RES_HEIGHT - tile->height);
@@ -198,33 +175,6 @@ sf::Vector2f WorldInterface::importMap(const std::string fileName){
 }
 
 void WorldInterface::applyTileConfig(int posX, int posY, TileConfigID tileConfigID){
-	Tile* tile = (*levelEditorTiles)[posY / TILE_SIZE][posX / TILE_SIZE];
-	tile->applyTileConfig(TileConfigsCollectionGlobal[tileConfigID], CONTEXT_LEVEL_EDITOR);//hardcoded enum
-}
-
-void WorldInterface::drawTiles(sf::RenderWindow* currentWindow, RunningContextTypes contextType){
-	PRINT_ERROR("WorldInterface::drawTiles", "this shit is being called from somewhere!");
-	/*int rows = MAP_SIZE_HEIGHT;
-	int columns = MAP_SIZE_WIDTH;
-	getRowsAndCols(rows, columns);
-	Tiles* tiles = NULL;
-
-	if(contextType == CONTEXT_LEVEL_EDITOR){
-		tiles = levelEditorTiles;
-	}
-	else if(contextType == CONTEXT_GAME){
-		tiles = gameTiles;
-	}
-	else{
-		PRINT_ERROR("WorldInterface::drawTiles", "received unknown running context type");
-		return;
-	}
-
-	for(int i = 0; i < rows; ++i){
-		for(int j = 0; j < columns; ++j){
-			if((*tiles)[i][j] != NULL){
-				currentWindow->draw((*tiles)[i][j]->shape);
-			}
-		}
-	}*/
+	Tile* tile = (*tiles)[posY / TILE_SIZE][posX / TILE_SIZE];
+	tile->applyTileConfig(TileConfigsCollectionGlobal[tileConfigID], CONTEXT_LEVEL_EDITOR);//TODO hardcoded enum
 }

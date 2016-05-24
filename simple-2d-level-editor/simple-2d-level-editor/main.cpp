@@ -1,31 +1,33 @@
 #pragma once
 #include <stdio.h>
-#include "Common.h"
+#include "RunningContextStack.h"
+#include "EventManager.h"
 
 int main(){
 	//sf::RenderWindow* currentWindow;
+	RunningContextTypes contextType = CONTEXT_INVALID;
+	RunningContext* currentContext = NULL;
 
-	RunningContextStack* contextStack = RunningContextStack::getInstance();
+	RunningContextStack* contextStack = new RunningContextStack();
 	contextStack->addRunningContext(CONTEXT_LEVEL_EDITOR);
 
 	RunningContextsDeque* contexts = contextStack->getContexts();
-	EventManager* eventManager = EventManager::getInstance();
+	currentContext = contexts->front();
 
-	RunningContextTypes contextType = CONTEXT_INVALID;
+	EventManager* eventManager = new EventManager();
+	eventManager->setupContextManagers(currentContext->getWindowManager(), currentContext->getWorldInterface());// TODO: HMMMM...
 
 	while(contexts->size() > 0){
 		contexts = contextStack->getContexts();
-		auto currentContext = contexts->front();
-		//currentWindow = currentContext->getWindow();
 
-		//currentWindow->clear();
+		currentContext = contexts->front();
 		contextType = currentContext->getContextType();
+
 		currentContext->preUpdate();
 		currentContext->update(0.f);
-		//currentWindow->display();
 		currentContext->postUpdate();
 
-		eventManager->update();//think about doing this first
+		eventManager->update(contextStack);//think about doing this first
 	}
 
 	return 0;

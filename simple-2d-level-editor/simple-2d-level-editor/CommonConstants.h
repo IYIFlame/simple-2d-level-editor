@@ -8,10 +8,11 @@ enum Status{
 	EXITING,
 };
 
-//for giving ids to every type of tile we have
+//character should be in a new enum called entitiesConfig or something
 enum TileConfigID{
 	GREEN,
 	RED,
+	INVALID,
 	CHARACTER,
 };
 

@@ -10,7 +10,8 @@ public:
 	Character(float, float, RunningContextTypes);
 	~Character();
 
-	void resetPosition(){ position = startPosition; };
+	void resetPosition();
+
 	void setPosition(sf::Vector2f newPosition){ position = newPosition; };
 	void setCurrentWindow(sf::RenderWindow* newWindow){ currWindow = newWindow; };
 	CurrentViewport getCurrentViewport(){ return currentViewport; };
@@ -23,17 +24,14 @@ public:
 	void applyTileConfig(TileConfig config, RunningContextTypes mode);
 	void applyRunningModeSettings(RunningContextTypes);
 	void setCurrentViewport(CurrentViewport);
-	Status modeLevelEditorUpdate();
-	Status modeGameUpdate();
+	void update();
 
 	TileConfigID id;
 	sf::Vector2f startPosition;
 protected:
 //contextType
 private://TODO lot of this will be protected not private...
-	//sf::CircleShape shape = sf::CircleShape(TILE_SIZE);
 	sf::RenderWindow* currWindow = NULL;
-	//TestGame* game;
 	sf::View* camera;
 	sf::Vector2f cameraSize = sf::Vector2f(144, 112);
 	CurrentViewport currentViewport = FIRST;

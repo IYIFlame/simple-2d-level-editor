@@ -10,7 +10,6 @@ Character::Character(float startPosX, float startPosY, RunningContextTypes conte
 	this->contextType = contextType;
 	applyTileConfig(TileConfigsCollectionGlobal[CHARACTER], CONTEXT_GAME);
 	setStartPosition(startPosX, startPosY);
-	resetPosition();
 	applyRunningModeSettings(contextType);
 }
 
@@ -73,6 +72,11 @@ void Character::setCurrentViewport(CurrentViewport newViewport){
 	camera->setCenter(x - TILE_SIZE*2 + cameraSize.x / 2, y - cameraSize.y / 2 + height + TILE_SIZE);
 }
 
+void Character::resetPosition(){
+	position = startPosition;
+	shape.setPosition(position);
+}
+
 void Character::setPosition(float x, float y){ 
 	position.x = x; 
 	position.y = y; 
@@ -91,13 +95,7 @@ void Character::move(sf::Vector2f direction){
 	camera->setCenter(pos.x + cameraSize.x / 2, pos.y - cameraSize.y / 2 + height + TILE_SIZE);	
 }
 
-Status Character::modeLevelEditorUpdate(){
-	//currWindow->draw(shape);
-	shape.setPosition(startPosition);
-	return RUNNING;
-}
-
-Status Character::modeGameUpdate(){
+void Character::update(){
 	sf::Event event;
 	if(currWindow->pollEvent(event)){
 		if(event.type == sf::Event::KeyPressed){
@@ -110,7 +108,4 @@ Status Character::modeGameUpdate(){
 
 	sf::Vector2f pos = shape.getPosition();
 	//camera->setCenter(pos.x - TILE_SIZE*2 + cameraSize.x / 2, pos.y - cameraSize.y / 2 + height + TILE_SIZE);
-
-
-	return RUNNING;
 }

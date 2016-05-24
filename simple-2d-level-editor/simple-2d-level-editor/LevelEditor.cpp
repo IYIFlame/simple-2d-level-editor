@@ -1,5 +1,4 @@
 #pragma once
-#include "WorldInterface.h"
 #include "CommonConstants.h"
 #include "RunningContext.h"
 #include "Character.h"
@@ -11,23 +10,19 @@
 class LevelEditor:public RunningContext{
 public:
 	LevelEditor(){
+		printf("Creating level editor window...\n");
 		contextType = CONTEXT_LEVEL_EDITOR;
-		windowManager->createWindow(contextType);
+		worldInterface->setContextType(contextType);
+		entityManager->setContextType(contextType);
+		windowManager->setContextType(contextType);
+		windowManager->createWindow();
 		worldInterface->initMap();
 	};
-	//LevelEditor(sf::RenderWindow* newWindow){
-	//	window = newWindow;
-	//	worldInterface->initMap();
-	//	//tiles = worldInterface->getRunningContextTiles(contextType);
-	//};
+
 	~LevelEditor(){
 		/*window->close();
 		delete window;*/
 	};
-
-	/*sf::RenderWindow* getWindow(){
-		return window;
-	};*/
 
 	RunningContextTypes getContextType(){
 		return contextType;
@@ -42,21 +37,7 @@ public:
 	};
 
 	Status update(float dt){
-		//int rows = MAP_SIZE_HEIGHT / TILE_SIZE + 1;
-		//int columns = MAP_SIZE_WIDTH / TILE_SIZE;
-		//for(int i = 0; i < rows; ++i){
-		//	for(int j = 0; j < columns; ++j){
-		//		if((*tiles)[i][j] != NULL){
-		//			window->draw((*tiles)[i][j]->shape);
-		//		}
-		//	}
-		//}
-
-		////update not really needed at this time
-		//if(character != NULL){//change this
-		//	character->modeLevelEditorUpdate();
-		//	window->draw(character->shape);
-		//}
+		//entityManager->update();
 
 		return RUNNING;
 	};
@@ -64,7 +45,7 @@ public:
 	void updateCharacter(int posX, int posY){
 		if(character == NULL){
 			character = new Character(posX - posX % TILE_SIZE, posY - posY % TILE_SIZE, CONTEXT_LEVEL_EDITOR);
-			character->setCurrentWindow(windowManager->getWindow(contextType));
+			character->setCurrentWindow(windowManager->getWindow());
 			printf("%d %d %d %d\n", posX, posY, posX / TILE_SIZE, posY / TILE_SIZE);
 			entityManager->addEntity(character);
 		}
@@ -77,12 +58,6 @@ public:
 protected:
 	//TODO these things are protected in base class and how we handle them here should be redone
 
-	//sf::RenderWindow* window = NULL;
-	Character* character = NULL;
-	//RunningContextTypes contextType = CONTEXT_LEVEL_EDITOR;
-
-	WorldInterface* worldInterface = WorldInterface::getInstance();
-
-	//Tiles* tiles;
-	CurrentViewport currentViewport = DEFAULT;
+	Character* character = NULL;//TODO level editor should not know of entities such as character, only EntityManager
+	CurrentViewport currentViewport = DEFAULT;//TODO not needed
 };

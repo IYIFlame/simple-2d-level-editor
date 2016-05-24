@@ -1,5 +1,6 @@
 #pragma once
 #include "CommonConstants.h"
+#include <string>
 
 //put these in namespace
 static void getRowsAndCols(int& resHeight, int& resWidth){

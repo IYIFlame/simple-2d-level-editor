@@ -1,13 +1,19 @@
 #include "RunningContext.h"
 
 RunningContext::RunningContext(){
-	entityManager = new EntitiesManager();
-	windowManager = new WindowManager(entityManager);
+	worldInterface = new WorldInterface(contextType);
+	entityManager = new EntitiesManager(contextType);
+	windowManager = new WindowManager(contextType, worldInterface, entityManager);
 };
-RunningContext::~RunningContext(){};
+RunningContext::~RunningContext(){
+	//TODO: call the destructor for each manager
+	delete worldInterface;
+	delete entityManager;
+	delete windowManager;
+};
 
 void RunningContext::preUpdate(){
-	windowManager->preUpdate(contextType);
+	windowManager->preUpdate();
 }
 
 Status RunningContext::update(float dt){
@@ -16,7 +22,7 @@ Status RunningContext::update(float dt){
 };
 
 void RunningContext::postUpdate(){
-	windowManager->postUpdate(contextType);
+	windowManager->postUpdate();
 }
 
 RunningContextTypes RunningContext::getContextType(){
@@ -31,10 +37,10 @@ void RunningContext::updateCharacter(int, int){
 	PRINT_ERROR("RunningContext::updateCharacter", "calling base class updateCharacter!");
 };
 
-sf::View* RunningContext::getCamera(){
-	PRINT_ERROR("RunningContext::getCamera", "calling base class getCamera!");
-	return camera;
-}
+//sf::View* RunningContext::getCamera(){
+//	PRINT_ERROR("RunningContext::getCamera", "calling base class getCamera!");
+//	return camera;
+//}
 
 Character* RunningContext::getCharacter(){
 	PRINT_ERROR("RunningContext::getCharacter", "calling base class getCharacter!");
@@ -43,6 +49,10 @@ Character* RunningContext::getCharacter(){
 
 void RunningContext::setCurrentViewport(CurrentViewport newViewport){
 	PRINT_ERROR("RunningContext::setCurrentViewport", "calling base class setCurrentViewport!");
+}
+
+WorldInterface* RunningContext::getWorldInterface(){
+	return worldInterface;
 }
 
 WindowManager* RunningContext::getWindowManager(){

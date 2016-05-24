@@ -17,10 +17,11 @@ public:
 struct TileConfigsCollection{
 	TileConfig green = TileConfig(GREEN, sf::Color::Color(0, 255, 0, 255), sf::Vector2f(TILE_SIZE, TILE_SIZE), sf::Vector2f(TILE_SIZE, TILE_SIZE));
 	TileConfig red = TileConfig(RED, sf::Color::Color(255, 0, 0, 255), sf::Vector2f(TILE_SIZE, TILE_SIZE), sf::Vector2f(TILE_SIZE, TILE_SIZE * 3));
+	TileConfig invalid = TileConfig(INVALID, sf::Color::Color(255, 0, 255, 255), sf::Vector2f(TILE_SIZE, TILE_SIZE), sf::Vector2f(TILE_SIZE, TILE_SIZE));
 	TileConfig character = TileConfig(CHARACTER, sf::Color::Color(0, 0, 255, 255), sf::Vector2f(TILE_SIZE, TILE_SIZE), sf::Vector2f(TILE_SIZE, TILE_SIZE));
 
 	//remember to add all of the above in here
-	const std::vector<TileConfig> configs = {green, red, character};
+	const std::vector<TileConfig> configs = {green, red, invalid, character};
 	TileConfig operator[](int id){
 		return configs[id];
 	};
@@ -28,7 +29,7 @@ struct TileConfigsCollection{
 
 static TileConfigsCollection TileConfigsCollectionGlobal;
 
-//consider saving the config we are currently using and store information such as the id only there
+//TODO: consider saving the config we are currently using and store information such as the id only there
 class Tile{
 public:
 	TileConfigID id;
@@ -39,6 +40,8 @@ public:
 	Tile::Tile(){};
 	Tile::Tile(TileConfig config, RunningContextTypes mode = CONTEXT_LEVEL_EDITOR){ applyTileConfig(config, mode); };
 	Tile::Tile(sf::Vector2f pos){ position = pos; shape = sf::RectangleShape(pos); };
+	Tile::~Tile(){};
+
 	void applyTileConfig(TileConfig config, RunningContextTypes mode){
 		id = config.id;  shape.setFillColor(config.colour);
 		if(mode == CONTEXT_LEVEL_EDITOR){
@@ -52,4 +55,5 @@ public:
 	};
 };
 
-typedef std::vector< std::vector<Tile*> > Tiles;
+typedef std::vector<Tile*> TileVector;
+typedef std::vector< TileVector > Tiles; //TODO: remake this to use a pointer to tile vector for consistency

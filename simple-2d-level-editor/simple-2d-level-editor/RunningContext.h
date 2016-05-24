@@ -6,15 +6,17 @@
 #include "TileLib.h" //TODO not needed
 #include "EntitiesManager.h"
 #include "WindowManager.h"
+#include "WorldInterface.h"
 
 class RunningContext{
 protected:
 	//TODO: rename this class to entity manager...
+	RunningContextTypes contextType = CONTEXT_INVALID;
 	EntitiesManager* entityManager = NULL; 
 	WindowManager* windowManager = NULL;
-	RunningContextTypes contextType = CONTEXT_INVALID;
-	sf::View* camera = NULL;//TODO also not needed?
-	Tiles tiles;//TODO not needed 
+	WorldInterface* worldInterface = NULL;
+	//sf::View* camera = NULL;//TODO also not needed?
+	//Tiles tiles;//TODO not needed 
 public://TODO revisit these functions and remove the unneeded ones
 	RunningContext();
 
@@ -28,15 +30,15 @@ public://TODO revisit these functions and remove the unneeded ones
 
 	virtual void setCurrentViewport(CurrentViewport newViewport);
 
-	//virtual sf::RenderWindow* getWindow() = 0;
-
-	virtual sf::View* getCamera();
+	//virtual sf::View* getCamera();
 
 	virtual Character* getCharacter();
 
 	virtual CurrentViewport getCurrentViewport() =0;
 
 	virtual RunningContextTypes getContextType();
+
+	virtual WorldInterface* getWorldInterface();
 
 	virtual WindowManager* getWindowManager();
 

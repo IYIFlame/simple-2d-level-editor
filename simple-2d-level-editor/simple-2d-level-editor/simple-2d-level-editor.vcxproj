@@ -123,9 +123,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Character.cpp" />
-    <ClCompile Include="Common.cpp" />
+    <ClCompile Include="RunningContextStack.cpp" />
     <ClCompile Include="EntitiesManager.cpp" />
     <ClCompile Include="Entity.cpp" />
+    <ClCompile Include="EventManager.cpp" />
     <ClCompile Include="LevelEditor.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="RunningContext.cpp" />
@@ -135,11 +136,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Character.h" />
-    <ClInclude Include="Common.h" />
+    <ClInclude Include="RunningContextStack.h" />
     <ClInclude Include="CommonConstants.h" />
     <ClInclude Include="CommonHelperFunctions.h" />
     <ClInclude Include="EntitiesManager.h" />
     <ClInclude Include="Entity.h" />
+    <ClInclude Include="EventManager.h" />
     <ClInclude Include="RunningContext.h" />
     <ClInclude Include="TileLib.h" />
     <ClInclude Include="WindowManager.h" />
