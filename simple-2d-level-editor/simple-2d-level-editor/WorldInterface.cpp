@@ -1,5 +1,8 @@
 #include "WorldInterface.h"
 
+//const std::string pathName = "C:\\Users\\flame\\Source\\Repos\\simple-2d-level-editor\\simple-2d-level-editor\\simple-2d-level-editor\\";
+const std::string pathName = "C:\\Users\\Public\\Documents\\";
+
 WorldInterface::WorldInterface(){
 	tiles = new Tiles();
 }
@@ -61,7 +64,6 @@ void WorldInterface::initMap(){
 	}
 }
 
-const std::string pathName = "C:\\Users\\flame\\Source\\Repos\\simple-2d-level-editor\\simple-2d-level-editor\\simple-2d-level-editor\\";
 void WorldInterface::exportMap(const std::string fileName, Character* character){
 	static const char tagMapSize = char(MAP_SIZE);
 	static const char tagID = char(ID);

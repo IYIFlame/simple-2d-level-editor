@@ -100,6 +100,7 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>C:\SFML-2.3.2\include;</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>SFML_STATIC;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
